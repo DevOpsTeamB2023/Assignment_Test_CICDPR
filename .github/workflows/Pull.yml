@@ -39,9 +39,9 @@ jobs:
     name: Review Response
     needs: [requests_build, requests_add_reviewer]
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request_review'
     steps:
       - name: Rerun Failed Job
+        if: github.event_name == 'pull_request_review'
         run: echo "Rerunning the failed job due to an approved review."
 
       - name: Check Code has been Reviewed
