@@ -2,77 +2,72 @@ name: Pull Request
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - review_requested
   pull_request_review:
     types:
       - submitted
+      - dismissed
 
 jobs:
-  Requests_Build:
-    name: Build and Test for Pull Request
+  build:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.10' 
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install plugin
-      run: |
-        pip install pytest pytest-cov
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        
-    - name: Check code
-      uses: actions/checkout@v4
-      with:
-        repository: DevOpsTeamB2023/DevOps_Oct2023_TeamB_Assignment
-
-  Requests_AddReviewer:
-    needs: [Requests_Build]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Add Technical Lead Review
-      uses: madrapps/add-reviewers@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        reviewers: koayyiting
-  
-  Requests_Review:
-    runs-on: ubuntu-latest
-    needs: [Requests_Build, Requests_AddReviewer]
-    steps:
-    - name: Check Code has been Reviewed
-      run: |
-        # Use GitHub API to get information about the pull request
-        pr_info=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                   "https://api.github.com/repos/DevOpsTeamB2023/DevOps_Oct2023_TeamB_Assignment/pulls/${{ github.event.pull_request.number }}")
-
-        # Extract the number of reviews and approvals
-        review_count=$(echo "$pr_info" | jq '.reviews | length')
-        approval_count=$(echo "$pr_info" | jq '.reviews | map(select(.state == "APPROVED")) | length')
-
-        # Check if at least one review is submitted and it is approved
-        if [ "$review_count" -ge 1 ] && [ "$approval_count" -ge 1 ]; then
-          echo "Required review has been submitted and approved."
-        else
-          echo "Required review is pending or not approved. Please wait for the review before merging."
-          exit 1
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  Required-Review:
-    runs-on: Ubuntu-latest
-    steps:
-      - name: Required Pull Request Review
-        if: github.event_name == 'pull_request_review'
-        uses: softprops/action-gh-release-assets@v2
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.event.before }}
-          inputs: '{"label": "approved"}'
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Add Reviewer
+        if: github.event_name == 'pull_request' && github.event.action == 'opened'
+        run: |
+          echo "Adding reviewer..."
+          REVIEWER=${{ secrets.koayyiting }}
+          GITHUB_TOKEN=$GITHUB_TOKEN jq -n --arg REVIEWER "$REVIEWER" '{"reviewers": ["\($REVIEWER)"]}' | \
+            curl -X POST -d @- -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/requested_reviewers"
+
+  review:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Wait for Review
+        if: github.event_name == 'pull_request_review' && github.event.action == 'submitted'
+        run: |
+          echo "Review submitted. Checking for approvals..."
+          APPROVED=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews" | \
+            jq 'map(select(.state == "APPROVED")) | length')
+
+          if [ "$APPROVED" -gt 0 ]; then
+            echo "Pull request approved. Ready to merge!"
+          else
+            echo "Pull request not approved. Please wait for the review to be approved before merging."
+            exit 1
+          fi
+
+  merge:
+    runs-on: ubuntu-latest
+    needs: review
+
+    steps:
+      - name: Merge Pull Request
+        if: github.event_name == 'pull_request_review' && github.event.action == 'submitted' && github.event.review.state == 'approved'
+        run: |
+          echo "Merging pull request..."
+          GITHUB_TOKEN=$GITHUB_TOKEN gh pr merge --number ${{ github.event.pull_request.number }}
