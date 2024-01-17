@@ -42,22 +42,22 @@ jobs:
         reviewers: koayyiting
 
   Required_Review:
-    name: Approval by Technical Lead
+    name: Technical Lead has submitted review
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    if: github.event_name == 'pull_request_review' && github.event.action == 'submitted'
     steps:
-      - name: Wait for review
+      - name: Check review status
         uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          required_approvals: 1 # Editable Value
           script: |
-            const reviews = await github.pulls.listReviews({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-            });
-            const approvedReviews = reviews.data.filter((review) => review.state === 'APPROVED');
-            if (approvedReviews.length < 1) {
-              core.setFailed('Pull request must be approved by Technical Lead before merging.');
-            }
+            if (await github.issues.getPullRequestReviews({ owner: context.repo.owner, repo: context.repo.repo, pull_number: context.issue.number }))
+              .data.reviews.nodes.filter(r => r.state == 'APPROVED').length < required_approvals
+              throw new Error('Pull request requires at least {{ required_approvals }} approving reviews by Technical Lead to merge.')
+              
+      - name: Merge pull request
+        uses: actions/merge-pull-request@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         
