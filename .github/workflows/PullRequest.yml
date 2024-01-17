@@ -9,6 +9,7 @@ jobs:
   Requests_Build:
     name: Build and Test for Pull Request
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
@@ -30,9 +31,10 @@ jobs:
         repository: DevOpsTeamB2023/Assignment_Test_CICDPR
 
   Requests_AddReviewer:
-    name: Needs Technical Lead Review
+    name: Add Technical Lead as Reviewer
     needs: Requests_Build
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
     steps:
     - name: Add Reviewers
       uses: madrapps/add-reviewers@v1
@@ -41,7 +43,7 @@ jobs:
         reviewers: koayyiting
 
   Requests_Review:
-    name: Technical Lead reviewed
+    name: Review Response
     needs: [Requests_Build, Requests_AddReviewer]
     runs-on: ubuntu-latest
     if: failure()
