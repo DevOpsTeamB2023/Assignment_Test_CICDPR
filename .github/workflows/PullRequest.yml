@@ -30,6 +30,7 @@ jobs:
         repository: DevOpsTeamB2023/Assignment_Test_CICDPR
 
   Requests_AddReviewer:
+    name: Needs Technical Lead Review
     needs: Requests_Build
     runs-on: ubuntu-latest
     steps:
@@ -40,9 +41,14 @@ jobs:
         reviewers: koayyiting
 
   Requests_Review:
+    name: Technical Lead reviewed
     needs: [Requests_Build, Requests_AddReviewer]
     runs-on: ubuntu-latest
+    if: failure()
     steps:
+    - name: Rerun Failed Job
+      run: echo "Rerunning the failed job due to an approved review."
+        
     - name: Check Code has been Reviewed
       run: |
         # Use GitHub API to get information about the pull request
@@ -59,20 +65,17 @@ jobs:
           exit 1
         fi
 
+    - name: Required Pull Request Review
+      if: github.event_name == 'pull_request_review'
+      uses: softprops/action-gh-release-assets@v2
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        tag: ${{ github.event.before }}
+        inputs: '{"label": "approved"}'
+        
     - name: Manual Approval
       if: always()
       run: echo "Pull request requires manual approval."
       
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-  Required-Review:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Required Pull Request Review
-        if: github.event_name == 'pull_request_review'
-        uses: softprops/action-gh-release-assets@v2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.event.before }}
-          inputs: '{"label": "approved"}'
