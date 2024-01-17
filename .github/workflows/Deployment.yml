@@ -1,46 +1,49 @@
-name: Test Deployment
+name: Release Workflow
+
 on:
   push:
-    tags:
-      - 'v*'
     paths:
-      - 'sourcecode/**'
-    
+      - '**/*.py'  # Adjust the path based on your project structure
+
 jobs:
-  deploy:
-    name: Deployment
+  release:
     runs-on: ubuntu-latest
+
+    outputs:
+      id: version
+      set: ${{ steps.bump-version.outputs.version }}
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.10' 
+      - name: Determine Change Size
+        id: determine-change
+        run: |
+          # Logic to determine change size
+          # Example: count the number of lines changed
+          CHANGE_SIZE=$(git diff --shortstat $(git describe --tags --abbrev=0)..HEAD | awk '{print $1}')
+          if [ $CHANGE_SIZE -gt 10 ]; then
+            CHANGE_TYPE="major"
+          elif [ $CHANGE_SIZE -gt 0 ]; then
+            CHANGE_TYPE="minor"
+          else
+            CHANGE_TYPE="patch"
+          fi
+          echo "::set-output name=change-type::$CHANGE_TYPE"
+        shell: bash
 
-    - name: install plugin
-      run: |
-        pip install pytest pytest-cov
+      - name: Bump Version
+        id: bump-version
+        run: echo "::set-output name=version::$(awk -F. "{\$3=\$3+1}1" OFS=. <<< "${{ github.event.ref }}" | sed 's/^refs\/tags\///')"
 
-    - name: list current files
-      run: |
-        ls
+      - name: Set up Git
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+          architecture: 'x64'
 
-    # Add your deployment commands here
-    - name: Deploy test.py
-      run: |
-        cp sourcecode/test.py .
-
-  Deploy_To_Git_Release:
-    name: Release to Git for Deployment
-    needs: deploy
-    runs-on: ubuntu-latest
-    steps:
-    - name: Set environment version
-      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-    - name: create a release
-      id: create-new-release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      with:
-        tag_name: ${{ env.RELEASE_VERSION }}
-        release_name: Release ${{env.RELEASE_VERSION }}
+      - name: Create Release
+        id: create-release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ steps.bump-version.outputs.version }}
+          release_name: Release ${{ steps.bump-version.outputs.version }}
+          body: "Change Type: ${{ steps.determine-change.outputs.change-type }}"
