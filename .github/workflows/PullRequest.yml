@@ -10,7 +10,7 @@ on:
 jobs:
   Requests_Build:
     name: Build and Test for Pull Request
-    runs-on: Ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
@@ -32,8 +32,32 @@ jobs:
       with:
         repository: DevOpsTeamB2023/DevOps_Oct2023_TeamB_Assignment
 
-  Requests_AddReviewer:
+  Requests_Review:
+    runs-on: ubuntu-latest
     needs: Requests_Build
+    steps:
+    - name: Check Code has been Reviewed
+      run: |
+        # Use GitHub API to get information about the pull request
+        pr_info=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                   "https://api.github.com/repos/DevOpsTeamB2023/DevOps_Oct2023_TeamB_Assignment/pulls/${{ github.event.pull_request.number }}")
+
+        # Extract the number of reviews and approvals
+        review_count=$(echo "$pr_info" | jq '.reviews | length')
+        approval_count=$(echo "$pr_info" | jq '.reviews | map(select(.state == "APPROVED")) | length')
+
+        # Check if at least one review is submitted and it is approved
+        if [ "$review_count" -ge 1 ] && [ "$approval_count" -ge 1 ]; then
+          echo "Required review has been submitted and approved."
+        else
+          echo "Required review is pending or not approved. Please wait for the review before merging."
+          exit 1
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  Requests_AddReviewer:
+    needs: [Requests_Build, Requests_Review]
     runs-on: ubuntu-latest
     steps:
     - name: Add Technical Lead Review
