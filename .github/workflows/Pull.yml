@@ -1,88 +1,63 @@
-name: Pull Request Workflow
-
+name: Pull Request
 on:
   pull_request:
     branches: [main]
   pull_request_review:
     types:
       - submitted
-
 jobs:
-  requests_build:
+  Requests_Build:
     name: Build and Test for Pull Request
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-      - name: Install plugin and dependencies
-        run: |
-          pip install pytest pytest-cov
-          python -m pip install --upgrade pip
-          pip install flake8 pytest
-          pip install -r requirements.txt || true  # Install requirements if file exists
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10' 
+    - name: Install plugin
+      run: |
+        pip install pytest pytest-cov
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 pytest
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
+    - name: Check code
+      uses: actions/checkout@v4
+      with:
+        repository: DevOpsTeamB2023/Assignment_Test_CICDPR
 
-  requests_add_reviewer:
-    name: Add Technical Lead as Reviewer
-    needs: requests_build
+  Requests_AddReviewer:
+    name: To Be Reviewed by Technical Lead
+    needs: Requests_Build
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
     steps:
-      - name: Add Reviewers
-        uses: madrapps/add-reviewers@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          reviewers: koayyiting
+    - name: Add Reviewer
+      uses: madrapps/add-reviewers@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        reviewers: koayyiting
 
-  requests_review:
-    name: Review Response
-    needs: [requests_build, requests_add_reviewer]
+  Required_Review:
+    name: Approval by Technical Lead
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
     steps:
-      - name: Rerun Failed Job
-        if: github.event_name == 'pull_request_review'
-        run: echo "Rerunning the failed job due to an approved review."
-
-      - name: Check Code has been Reviewed
-        run: |
-            # Use GitHub API to get information about the pull request
-            pr_info=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                       "https://api.github.com/repos/DevOpsTeamB2023/DevOps_Oct2023_TeamB_Assignment/pulls/${{ github.event.pull_request.number }}")
-            
-            # Check if the API request was successful
-            if [ -z "$pr_info" ]; then
-              echo "Error retrieving pull request information from GitHub API."
-              exit 1
-            fi
-            
-            # Extract the number of reviews and approvals
-            review_count=$(echo "$pr_info" | jq '.reviews | length')
-            approval_count=$(echo "$pr_info" | jq '.reviews | map(select(.state == "APPROVED")) | length')
-            
-            # Check if at least one review is submitted and it is approved
-            if [ "$review_count" -ge 1 ] && [ "$approval_count" -ge 1 ]; then
-              echo "Technical Lead has submitted reviewed and approved."
-            else
-              echo "Required review is pending or not approved. Please wait for the review before merging."
-              exit 1
-            fi
-
-      - name: Approved Required Pull Request Review
-        if: github.event_name == 'pull_request_review'
-        uses: actions/github-script@v5
+      - name: Wait for review
+        uses: actions/github-script@v4
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { data } = await github.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            });
-            await github.pulls.createReview({
+            const reviews = await github.pulls.listReviews({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number,
-              event: 'APPROVE',
-              body: 'Automatic approval after successful build and review'
             });
+            const approvedReviews = reviews.data.filter((review) => review.state === 'APPROVED');
+            if (approvedReviews.length < 1) {
+              core.setFailed('Pull request must be approved by Technical Lead before merging.');
+            }
+        
