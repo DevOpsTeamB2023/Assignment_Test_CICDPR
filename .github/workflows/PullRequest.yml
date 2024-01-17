@@ -3,6 +3,9 @@ name: Pull Request
 on:
   pull_request:
     branches: [main]
+  pull_request_review:
+    types:
+      - submitted
 
 jobs:
   Requests_Build:
@@ -38,3 +41,14 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         reviewers: koayyiting
+
+  Required-Review:
+    runs-on: Ubuntu-latest
+    steps:
+      - name: Required Pull Request Review
+        if: github.event_name == 'pull_request_review'
+        uses: softprops/action-gh-release-assets@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.event.before }}
+          inputs: '{"label": "approved"}'
