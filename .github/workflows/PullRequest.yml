@@ -67,7 +67,6 @@ jobs:
 
     - name: Approved Required Pull Request Review
       if: github.event_name == 'pull_request_review'
-      uses: softprops/action-gh-release-assets@v2
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.event.before }}
