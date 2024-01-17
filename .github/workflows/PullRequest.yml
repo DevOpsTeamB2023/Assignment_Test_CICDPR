@@ -33,7 +33,7 @@ jobs:
         repository: DevOpsTeamB2023/DevOps_Oct2023_TeamB_Assignment
 
   Requests_AddReviewer:
-    needs: [Requests_Build, Requests_Review]
+    needs: [Requests_Build]
     runs-on: ubuntu-latest
     steps:
     - name: Add Technical Lead Review
@@ -44,7 +44,7 @@ jobs:
   
   Requests_Review:
     runs-on: ubuntu-latest
-    needs: Requests_Build
+    needs: [Requests_Build, Requests_AddReviewer]
     steps:
     - name: Check Code has been Reviewed
       run: |
