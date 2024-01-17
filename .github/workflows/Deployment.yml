@@ -1,8 +1,6 @@
 name: Test Deployment
 on:
   push:
-    tags:
-      - 'v*'
     paths:
       - 'sourcecode/**'
 
