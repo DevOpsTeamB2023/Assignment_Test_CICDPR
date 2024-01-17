@@ -43,12 +43,10 @@ jobs:
 
   Requests_Review:
     name: Review Response
-    needs: [Requests_Build, Requests_AddReviewer]
+    needs: Requests_Build
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_review'
     steps:
-    - name: Rerun Failed Job
-      run: echo "Rerunning the failed job due to an approved review."
-        
     - name: Check Code has been Reviewed
       run: |
         # Use GitHub API to get information about the pull request
@@ -66,7 +64,6 @@ jobs:
         fi
 
     - name: Approved Required Pull Request Review
-      if: github.event_name == 'pull_request_review'
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.event.before }}
