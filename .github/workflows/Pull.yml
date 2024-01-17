@@ -56,8 +56,16 @@ jobs:
               .data.reviews.nodes.filter(r => r.state == 'APPROVED').length < required_approvals
               throw new Error('Pull request requires at least {{ required_approvals }} approving reviews by Technical Lead to merge.')
               
-      - name: Merge pull request
-        uses: actions/merge-pull-request@v4
+      - name: Merge pull request upon Approval
+        uses: actions/github-script@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+                github.pulls.merge({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  pull_number: context.issue.number,
+                  merge_method: 'squash',
+                  commit_message: 'Merging approved pull request'
+                })
         
