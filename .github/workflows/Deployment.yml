@@ -19,7 +19,6 @@ jobs:
     - name: list current files
       run: |
         ls
-    # Add your deployment commands here
     - name: Deploy test.py
       run: |
         cp sourcecode/test.py .
