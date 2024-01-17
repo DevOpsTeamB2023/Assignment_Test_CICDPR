@@ -1,0 +1,44 @@
+name: Test Deployment
+on:
+  push:
+    tags:
+      - 'v*'
+    
+jobs:
+  deploy:
+    name: Deployment
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10' 
+
+    - name: install plugin
+      run: |
+        pip install pytest pytest-cov
+
+    - name: list current files
+      run: |
+        ls
+
+    # Add your deployment commands here
+    - name: Deploy test.py
+      run: |
+        cp sourcecode/test.py .
+
+  Deploy_To_Git_Release:
+    name: Release to Git for Deployment
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set environment version
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+    - name: create a release
+      id: create-new-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      with:
+        tag_name: ${{ env.RELEASE_VERSION }}
+        release_name: Release ${{env.RELEASE_VERSION }}
