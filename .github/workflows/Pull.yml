@@ -39,28 +39,27 @@ jobs:
     name: Review Response
     needs: [requests_build, requests_add_reviewer]
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_review'
     steps:
       - name: Rerun Failed Job
         run: echo "Rerunning the failed job due to an approved review."
 
       - name: Check Code has been Reviewed
         run: |
-          run: |
-          run: |
             # Use GitHub API to get information about the pull request
             pr_info=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                        "https://api.github.com/repos/DevOpsTeamB2023/DevOps_Oct2023_TeamB_Assignment/pulls/${{ github.event.pull_request.number }}")
-        
+            
             # Check if the API request was successful
             if [ -z "$pr_info" ]; then
               echo "Error retrieving pull request information from GitHub API."
               exit 1
             fi
-        
+            
             # Extract the number of reviews and approvals
             review_count=$(echo "$pr_info" | jq '.reviews | length')
             approval_count=$(echo "$pr_info" | jq '.reviews | map(select(.state == "APPROVED")) | length')
-        
+            
             # Check if at least one review is submitted and it is approved
             if [ "$review_count" -ge 1 ] && [ "$approval_count" -ge 1 ]; then
               echo "Technical Lead has submitted reviewed and approved."
