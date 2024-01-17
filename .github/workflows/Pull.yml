@@ -71,9 +71,9 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.event.before }}
         inputs: '{"label": "approved"}'
-        
+      
     - name: Manual Approval
-      if: always()
+      if: success()
       run: echo "Pull request requires manual approval."
       
       env:
