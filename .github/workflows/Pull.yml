@@ -35,7 +35,15 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-    - name: Add Reviewers
+    - name: Add Technical Lead as Reviewer
+      if: ${{ github.context.payload.pull_request.user.login }} != "koayyiting"
+      uses: madrapps/add-reviewers@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        reviewers: koayyiting
+        
+    - name: Add Reviewer
+      if: ${{ github.context.payload.pull_request.user.login }} == "koayyiting"
       uses: madrapps/add-reviewers@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
