@@ -54,7 +54,7 @@ jobs:
 
   Requests_Review:
     name: Review Response
-    needs: [Requests_Build, Requests_AddReviewer]
+    needs: Requests_Build
     runs-on: ubuntu-latest
     steps:
     - name: Rerun Failed Job
@@ -88,13 +88,17 @@ jobs:
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
 
-      - name: Automatically Merge Pull Request
-        if: success()
-        run: |
-          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER
-          git checkout pr-$PR_NUMBER
-          git merge origin/main # or the branch you want to merge into
+      - name: Pull Request is Ready
+        uses: AlbertHernandez/is-ready-action@v1.1.0
+        with:
+          required_labels: ${{ github.context.payload.pull_request.title }}
+          
+          run: |
+            PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+            git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER
+            git checkout pr-$PR_NUMBER
+            git merge origin/main
+            
         
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
