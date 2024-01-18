@@ -31,7 +31,7 @@ jobs:
       if: always()
       run: |
         cd $GITHUB_WORKSPACE/testcase
-        pytest -v --cov=../sourcecode --cov-report=xml
+        pytest -v --cov=../sourcecode --junitxml=report.xml
       # pytest -v testcase/ --cov=sourcecode/
 
     - if: ${{ failure() }}
