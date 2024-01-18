@@ -36,21 +36,21 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Reviewer
-        uses: actions/github-script@v4
-        with:
-          script: |
-            const creator = github.context.payload.pull_request.user.login;
-            const reviewer = creator === 'koayyiting' ? 'lacsadoshaniahsantiago' : 'koayyiting';
+        id: toadd_reviewers
+        run: |
+          AUTHOR=${{ github.event.pull_request.user.login }}
+          if [ "$AUTHOR" == "koayyiting" ]; then
+            REVIEWERS="lacsadoshaniahsantiago"
+          else
+            REVIEWERS="koayyiting"
+          fi
+          echo "::set-output name=reviewers::$REVIEWERS"
 
-            if (reviewer) {
-              const response = await github.pulls.requestReviewers({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: context.issue.number,
-                reviewers: [reviewer],
-              });
-              console.log('Reviewer requested:', response.data.requested_reviewers);
-            }
+      - name: Add Reviewers
+        uses: madrapps/add-reviewers@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          reviewers: ${{ steps.toadd_reviewers.outputs.reviewers }}
 
   Requests_Review:
     name: Review Response
