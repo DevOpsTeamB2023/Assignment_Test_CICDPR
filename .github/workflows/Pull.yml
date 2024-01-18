@@ -57,12 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
 
-    steps:
-      - name: Set up Git
-        run: |
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          
+    steps:          
       - name: Check Code has been Reviewed
         id: get_reviews
         run: |
@@ -73,7 +68,7 @@ jobs:
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
           
-      # Check if at least one review is submitted and it is approved
+      # Merge pull request if at least one review is submitted and approved
       - name: Pull Request is Ready
         if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
         uses: AlbertHernandez/is-ready-action@v1.1.0
