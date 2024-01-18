@@ -30,7 +30,8 @@ jobs:
     - name: Use Test Cases
       if: always()
       run: |
-        pytest -v testcase/ --cov=sourcecode/
+        cd testcase
+        pytest -v --cov=../sourcecode
 
     # - if: ${{ failure() }}
     #   name: Create Issue on Failed workflow
