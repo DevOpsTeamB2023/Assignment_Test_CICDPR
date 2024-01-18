@@ -71,16 +71,16 @@ jobs:
       # Merge pull request if at least one review is submitted and approved
       - name: Pull Request is Ready
         if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
-        uses: AlbertHernandez/is-ready-action@v1.1.0
+        uses: buildsville/simple-merge@v1
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          method: squash
           required_labels: ${{ github.context.payload.pull_request.title }}
+          title: ${{github.context.payload.pull_request.number}} + " pull request merged"
           
-          run: |
-            PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-            git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER
-            git checkout pr-$PR_NUMBER
-            git merge origin/main
+          # run: |
+          #   PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          #   git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER
+          #   git checkout pr-$PR_NUMBER
+          #   git merge origin/main
             
-        
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
