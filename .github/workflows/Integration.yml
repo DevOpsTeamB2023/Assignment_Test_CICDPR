@@ -30,6 +30,7 @@ jobs:
   test:
     name: Testing Project
     runs-on: ubuntu-latest
+    need: build
     steps:
     - name: Use Test Cases
       if: always()
