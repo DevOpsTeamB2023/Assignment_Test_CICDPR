@@ -40,7 +40,7 @@ jobs:
     - name: Use Test Cases
       if: always()
       run: |
-        pytest -v --cov=sourcecode --cov-report xml:coverage.xml --junitxml=report.xml
+        pytest -v test.py /sourcecode
 
     - if: ${{ failure() }}
       name: Create Issue on Failed workflow
@@ -57,22 +57,22 @@ jobs:
           status -        `${{ job.status }}`
           assignees: `${{ github.actor }}`
           
-    - name: Publish Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v2
-      if: always()
-      with:
-        junit_files: "report.xml"
+    # - name: Publish Test Results
+    #   uses: EnricoMi/publish-unit-test-result-action/composite@v2
+    #   if: always()
+    #   with:
+    #     junit_files: "report.xml"
 
-    - name: Create Test Results Folder
-      run: |
-        mkdir testresults
-        mv report.xml ./testresults
+    # - name: Create Test Results Folder
+    #   run: |
+    #     mkdir testresults
+    #     mv report.xml ./testresults
         
-    - name: Upload Test Results
-      uses: actions/upload-artifact@v2
-      with: 
-        name: testResults
-        path: testresults 
+    # - name: Upload Test Results
+    #   uses: actions/upload-artifact@v2
+    #   with: 
+    #     name: testResults
+    #     path: testresults 
     
     - name: Download Remote Test Results
       uses: actions/download-artifact@v2
