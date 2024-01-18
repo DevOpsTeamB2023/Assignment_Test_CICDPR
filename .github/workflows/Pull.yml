@@ -30,24 +30,27 @@ jobs:
         repository: DevOpsTeamB2023/Assignment_Test_CICDPR
 
   Requests_AddReviewer:
-    name: Add Technical Lead as Reviewer
+    name: Adding Reviewer
     needs: Requests_Build
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:
-    - name: Add Technical Lead as Reviewer
-      if: ${{ github.context.payload.pull_request.user.login }} != "koayyiting"
-      uses: madrapps/add-reviewers@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        reviewers: koayyiting
-        
-    - name: Add Reviewer
-      if: ${{ github.context.payload.pull_request.user.login }} == "koayyiting"
-      uses: madrapps/add-reviewers@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        reviewers: lacsadoshaniahsantiago
+      - name: Reviewer
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const creator = github.context.payload.pull_request.user.login;
+            const reviewer = creator === 'koayyiting' ? 'lacsadoshaniahsantiago' : 'koayyiting';
+
+            if (reviewer) {
+              const response = await github.pulls.requestReviewers({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                reviewers: [reviewer],
+              });
+              console.log('Reviewer requested:', response.data.requested_reviewers);
+            }
 
   Requests_Review:
     name: Review Response
