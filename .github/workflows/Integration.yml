@@ -30,6 +30,7 @@ jobs:
     - name: Use Test Cases
       if: always()
       run: |
+        cd testcase
         pytest -v testcase/ --cov=sourcecode/
 
     # - if: ${{ failure() }}
