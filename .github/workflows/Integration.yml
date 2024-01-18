@@ -40,7 +40,7 @@ jobs:
     - name: Use Test Cases
       if: always()
       run: |
-        pytest -v test cases/
+        pytest -v testcase/
 
     - if: ${{ failure() }}
       name: Create Issue on Failed workflow
