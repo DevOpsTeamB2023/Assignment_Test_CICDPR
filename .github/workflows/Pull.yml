@@ -65,16 +65,25 @@ jobs:
           exit 1
         fi
 
-    - name: Approved Required Pull Request Review
-      if: github.event_name == 'pull_request_review'
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.event.before }}
-        inputs: '{"label": "approved"}'
-      
-    - name: Manual Approval
-      if: success()
-      run: echo "Pull request requires manual approval."
-      
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  Response_Review:
+    name: Approved Review
+    needs: Requests_Build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_review'
+
+    steps:
+      - name: Set up Git
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+
+      - name: Automatically Merge Pull Request
+        if: success()
+        run: |
+          PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER
+          git checkout pr-$PR_NUMBER
+          git merge origin/main # or the branch you want to merge into
+        
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
