@@ -67,7 +67,7 @@ jobs:
 
   Response_Review:
     name: Approved Review
-    needs: Requests_Build
+    needs: Requests_Review
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
 
