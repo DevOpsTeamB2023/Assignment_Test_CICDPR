@@ -19,9 +19,9 @@ jobs:
     - name: list current files
       run: |
         ls
-    - name: Deploy test.py
+    - name: Deploy sourcecode
       run: |
-        cp sourcecode/test.py .
+        cp -r sourcecode/* .
   Deploy_To_Git_Release:
     name: Release to Git for Deployment
     needs: deploy
