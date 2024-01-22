@@ -1,7 +1,6 @@
-name: Pull
+name: Pull Request
 on:
   pull_request:
-    branches: [main]
   pull_request_review:
     types:
       - submitted
@@ -11,9 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+
+    # Python
     - uses: actions/setup-python@v4
       with:
-        python-version: '3.10' 
+        python-version: '3.10'
+
+    # Go Lang
+    - uses: actions/setup-go@v4 
+      with:
+        go-version: '1.18'
+    
     - name: Install plugin
       run: |
         pip install pytest pytest-cov
@@ -56,7 +63,7 @@ jobs:
     name: Approved Review
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
-
+    
     steps:          
       - name: Check Code has been Reviewed
         id: get_reviews
@@ -67,20 +74,31 @@ jobs:
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
-          
-      # Merge pull request if at least one review is submitted and approved
-      - name: Pull Request is Ready
-        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
-        uses: buildsville/simple-merge@v1
+
+
+  Requests_Merge:
+    name: Merge Pull Request to Branch
+    needs: Response_Review
+    if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check All Successful checks
+        run: |
+          if [[$CHECKS_SUCCEEDED == true ]]; then
+            echo "All checks passed, proceeding with merge."
+          else
+            echo "Checks failed, not merging."
+            exit 1 # Terminate the job if checks fail
+          fi
+
+      - uses: pascalgn/automerge-action@v0.15.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          method: squash
           required_labels: ${{ github.context.payload.pull_request.title }}
           title: ${{github.context.payload.pull_request.number}} + " pull request merged"
+          merge_method: merge  # Crucial for merging to the set branch
 
-          run: |
-            PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-            git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER
-            git checkout pr-$PR_NUMBER
-            git merge origin/main
-            
+          
+      
