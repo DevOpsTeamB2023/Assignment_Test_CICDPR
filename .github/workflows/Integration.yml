@@ -65,9 +65,9 @@ jobs:
       uses: actions/upload-artifact@v2
       with: 
         name: testResults
-        path: testresults 
+        path: testresults
     
     - name: Download Remote Test Results
       uses: actions/download-artifact@v2
       with:
-        name: testResults
+        name: Artifacts/testResults
