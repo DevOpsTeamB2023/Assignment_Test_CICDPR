@@ -40,7 +40,7 @@ jobs:
         run: |
           AUTHOR=${{ github.event.pull_request.user.login }}
           if [ "$AUTHOR" == "koayyiting" ]; then
-            REVIEWERS="lacsadoshaniahsantiago"
+            REVIEWERS="ng-zi-yi"
           else
             REVIEWERS="koayyiting"
           fi
