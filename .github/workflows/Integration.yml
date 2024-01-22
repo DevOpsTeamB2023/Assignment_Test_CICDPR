@@ -58,8 +58,8 @@ jobs:
     - name: Create Test Results Folder
       run: |
         mkdir testresults
-        # mv testcase/report.xml ./testresults
-        mv report.xml ./testresults
+        mv testcase/report.xml ./testresults
+        # mv report.xml ./testresults
         
     - name: Upload Test Results
       uses: actions/upload-artifact@v2
