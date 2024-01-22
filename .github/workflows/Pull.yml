@@ -78,9 +78,9 @@ jobs:
           required_labels: ${{ github.context.payload.pull_request.title }}
           title: ${{github.context.payload.pull_request.number}} + " pull request merged"
           
-          # run: |
-          #   PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-          #   git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER
-          #   git checkout pr-$PR_NUMBER
-          #   git merge origin/main
+          run: |
+            PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+            git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER
+            git checkout pr-$PR_NUMBER
+            git merge origin/main
             
