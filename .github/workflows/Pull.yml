@@ -75,15 +75,9 @@ jobs:
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
 
-
-  Requests_Merge:
-    name: Merge Pull Request to Branch
-    needs: Response_Review
-    if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
-    runs-on: ubuntu-latest
-    steps:
       - uses: actions/checkout@v3
-      - name: Check All Successful checks
+      - name: Check All Successful checks, then Merge
+        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
         run: |
           if [[$CHECKS_SUCCEEDED == true ]]; then
             echo "All checks passed, proceeding with merge."
@@ -99,6 +93,3 @@ jobs:
           required_labels: ${{ github.context.payload.pull_request.title }}
           title: ${{github.context.payload.pull_request.number}} + " pull request merged"
           merge_method: merge  # Crucial for merging to the set branch
-
-          
-      
