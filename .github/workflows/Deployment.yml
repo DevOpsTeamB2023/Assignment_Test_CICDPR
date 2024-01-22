@@ -1,10 +1,8 @@
 name: Test Deployment
 on:
-  push:
-    paths:
-      - 'sourcecode/**'
-    branches:
-      - main
+  release:
+    types:
+      - created
 
 jobs:
   deploy:
