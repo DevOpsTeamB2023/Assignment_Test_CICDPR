@@ -49,22 +49,22 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
-          echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
+          echo "approved_reviews=$APPROVED_REVIEWS" >> $GITHUB_OUTPUT
 
+
+  Merge_Request:
+    if: ${{ steps.get_reviews.outputs.approved_reviews }} => 1
+    needs: Response_Review
+    runs-on: ubuntu-latest
+    steps:
       - name: Get Check Status
-        id: get_checks
         uses: actions/get-status-checks@v7.2.4
         with:
           ref: ${{ github.sha }}
-
-      - name: Merge Action
-        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1 && steps.get_checks.outputs.checks
-        run: |
-          # Replace this with your actual merging logic
-          echo "Merging pull request..."
-          # ... your commands to merge the pull request
-
-      - uses: pascalgn/automerge-action@v15.6
+          
+      - name: Check For Successful Builds
+        if: steps.get-status-checks.outputs.checks == steps.get-status-checks.outputs.checks | select(.state == 'success') | length
+      - uses: pascalgn/automerge-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
