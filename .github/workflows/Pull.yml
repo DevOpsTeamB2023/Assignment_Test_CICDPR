@@ -6,10 +6,7 @@ on:
       - submitted
 jobs:
   Requests_Build:
-    name: Request Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: ./.github/workflows/BuildingSetUp.yml
+    uses: ./.github/workflows/BuildingSetUp.yml
 
   Requests_AddReviewer:
     name: Adding Reviewer
