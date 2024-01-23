@@ -47,10 +47,16 @@ jobs:
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
-
+      
+      - uses: actions/get-status-checks@v7
+      - name: Get Check Results
+        id: get_checks
+        with:
+          ref: ${{ github.sha }}
+          
       - uses: actions/checkout@v3
       - name: Check All Successful checks, then Merge
-        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
+        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1 && ${{ steps.get-status-checks.outputs.all-checks-passed == 'true' }}
         run: |
           if ${{ checks-succeeded == true }} ; then
             echo "All checks passed, proceeding with merge."
@@ -58,7 +64,7 @@ jobs:
             echo "Checks failed, not merging."
             exit 1 # Terminate the job if checks fail
           fi
-
+          
       - uses: pascalgn/automerge-action@v0.15.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
