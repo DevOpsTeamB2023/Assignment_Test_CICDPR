@@ -1,7 +1,7 @@
 name: Build SetUp (Shared)
 
 on: 
-  pull_request:
+  workflow_call:
   
 jobs:
   SetUp:
