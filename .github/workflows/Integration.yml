@@ -82,7 +82,7 @@ jobs:
       - name: Download Remote Test Results
         uses: actions/download-artifact@v2
         with:
-          name: testResults
+          name: Issue ${{ steps.getissue_number.outputs.issue_number }} (${{ steps.getcurrent_date.outputs.current_date }})
   
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
