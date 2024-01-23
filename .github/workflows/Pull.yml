@@ -1,33 +1,13 @@
-name: Pull
+name: Pull Request
 on:
   pull_request:
-    branches: [main]
   pull_request_review:
     types:
       - submitted
 jobs:
   Requests_Build:
-    name: Build and Test for Pull Request
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.10' 
-    - name: Install plugin
-      run: |
-        pip install pytest pytest-cov
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        
-    - name: Check code
-      uses: actions/checkout@v4
-      with:
-        repository: DevOpsTeamB2023/Assignment_Test_CICDPR
+    name: Request Build
+    uses: ./.github/workflows/BuildingSetUp.yml
 
   Requests_AddReviewer:
     name: Adding Reviewer
@@ -53,10 +33,10 @@ jobs:
           reviewers: ${{ steps.toadd_reviewers.outputs.reviewers }}
 
   Response_Review:
-    name: Approved Review
+    name: Approve Review and Merge
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
-
+    
     steps:          
       - name: Check Code has been Reviewed
         id: get_reviews
@@ -67,20 +47,22 @@ jobs:
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
-          
-      # Merge pull request if at least one review is submitted and approved
-      - name: Pull Request is Ready
+
+      - uses: actions/checkout@v3
+      - name: Check All Successful checks, then Merge
         if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
-        uses: buildsville/simple-merge@v1
+        run: |
+          if [[$CHECKS_SUCCEEDED == true ]]; then
+            echo "All checks passed, proceeding with merge."
+          else
+            echo "Checks failed, not merging."
+            exit 1 # Terminate the job if checks fail
+          fi
+
+      - uses: pascalgn/automerge-action@v0.15.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          method: squash
           required_labels: ${{ github.context.payload.pull_request.title }}
           title: ${{github.context.payload.pull_request.number}} + " pull request merged"
-
-          run: |
-            PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-            git fetch origin pull/$PR_NUMBER/head:pr-$PR_NUMBER
-            git checkout pr-$PR_NUMBER
-            git merge origin/main
-            
+          merge_method: merge  # Crucial for merging to the set branch
