@@ -50,8 +50,7 @@ jobs:
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
           
       - name: Get Check Status
-      - uses: actions/checkout@v3
-      - uses: actions/get-status-checks@v7.2.4
+        uses: actions/get-status-checks@v7.2.4
         with:
           ref: ${{ github.sha }}
 
