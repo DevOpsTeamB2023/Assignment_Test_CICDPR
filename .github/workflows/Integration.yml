@@ -26,7 +26,11 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: DevOpsTeamB2023/Assignment_Test_CICDPR
-      
+  Test:
+    name: Testing Code
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
     - name: Use Test Cases
       if: always()
       run: |
@@ -48,25 +52,45 @@ jobs:
           Job -           `${{ github.job }}`
           status -        `${{ job.status }}`
           assignees: `${{ github.actor }}`
-    - name: Create Test Results Folder
-      run: |
-        mkdir testresults
-        mv testcase/report.xml ./testresults
-        # mv report.xml ./testresults
-        
-    - name: Upload Test Results
-      uses: actions/upload-artifact@v2
-      with: 
-        name: testResults
-        path: testresults
-    
-    - name: Download Remote Test Results
-      uses: actions/download-artifact@v2
-      with:
-        name: testResults
-
-    - name: Publish Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v2
-      if: always()
-      with:
-        junit_files: "report.xml"
+          
+  TestResults:
+    name: Test Artifact
+    needs: Test
+    runs-on: ubuntu-latest
+    if: ${{ success() }}
+    steps:
+      - name: Create Test Results Folder
+        run: |
+          mkdir testresults
+          mv testcase/report.xml ./testresults
+          # mv report.xml ./testresults
+      
+      - name: Get Issue Number
+        id: getissue_number
+        if: ${{ failure() }}
+        run: |
+          issue_number=$(gh issue create --title "${{ github.workflow }} failed" --body "${{ github.workflow }} failed. See details at https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" --repo ${{ github.repository }} | jq -r '.number')
+          echo "::set-output name=issue_number::$issue_number"
+          
+      - name: Get Current Date
+        id: getcurrent_date
+        run: |
+          current_date=$(date +"%Y-%m-%d")
+          echo "::set-output name=current_date::$current_date"
+          
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v2
+        with: 
+          name: Issue ${{ steps.getissue_number.outputs.issue_number }} (${{ steps.getcurrent_date.outputs.current_date }})
+          path: testresults/report.xml
+      
+      - name: Download Remote Test Results
+        uses: actions/download-artifact@v2
+        with:
+          name: testResults
+  
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        if: always()
+        with:
+          junit_files: "report.xml"
