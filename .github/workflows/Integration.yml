@@ -12,7 +12,7 @@ jobs:
   #   name: SetUp
   #   uses: ./.github/workflows/BuildingSetUp.yml
       
-  Build_and_Tes:
+  Build_and_Test:
     name: Testing Code
     # needs: SetUp
     runs-on: ubuntu-latest
@@ -51,7 +51,7 @@ jobs:
             
   TestResults:
     name: Test Artifact
-    needs: Build_and_Testing
+    needs: Build_and_Test
     runs-on: ubuntu-latest
     if: ${{ success() }}
     steps:
