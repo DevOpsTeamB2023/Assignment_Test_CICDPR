@@ -54,18 +54,9 @@ jobs:
         with:
           ref: ${{ github.sha }}
           
-      - uses: actions/checkout@v3
-      - name: Check All Successful checks, then Merge
-        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
-        run: |
-          if ${{ steps.get-status-checks.outputs.all-checks-passed == 'true' }} ; then
-            echo "All checks passed, proceeding with merge."
-          else
-            echo "Checks failed, not merging."
-            exit 1 # Terminate the job if checks fail
-          fi
-          
       - uses: pascalgn/automerge-action@v0.15.6
+      - name: Successful Checks to Merge Pull Request
+        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1  && ${{ steps.get-status-checks.outputs.all-checks-passed == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
