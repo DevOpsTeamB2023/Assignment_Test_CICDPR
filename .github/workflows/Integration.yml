@@ -8,65 +8,73 @@ on:
     branches: [main]
     
 jobs:
-  build:
-    name: Build and Test for Integration
+  SetUp:
+    name: SetUp
+    uses: ./.github/workflows/BuildingSetUp.yml
+      
+  Testing:
+    name: Testing Code
+    needs: SetUp
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.10' 
-        
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest pytest-cov
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Checkout Codes
-      uses: actions/checkout@v4
-      with:
-        repository: DevOpsTeamB2023/Assignment_Test_CICDPR
+      - name: Use Test Cases
+        if: always()
+        run: |
+          cd $GITHUB_WORKSPACE/testcase
+          pytest -v --cov=../sourcecode --junitxml=report.xml
+        # pytest -v testcase/ --cov=sourcecode/
+  
+      - if: ${{ failure() }}
+        name: Create Issue on Failed workflow
+        uses: dacbd/create-issue-action@main
+        with:
+          token: ${{ github.token }}
+          title: Action workflow Workflow name - `${{ github.workflow }}` failed.
+          body: |
+            ### Context
+            [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            [Codebase](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
+            Workflow name - `${{ github.workflow }}`
+            Job -           `${{ github.job }}`
+            status -        `${{ job.status }}`
+            assignees: `${{ github.actor }}`
+            
+  TestResults:
+    name: Test Artifact
+    needs: Testing
+    runs-on: ubuntu-latest
+    if: ${{ success() }}
+    steps:
+      - name: Create Test Results Folder
+        run: |
+          mkdir testresults
+          mv testcase/report.xml ./testresults
+          # mv report.xml ./testresults
+      - name: Get Issue Number
+        id: getissue_number
+        if: ${{ failure() }}
+        run: |
+          issue_number=$(gh issue create --title "${{ github.workflow }} failed" --body "${{ github.workflow }} failed. See details at https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" --repo ${{ github.repository }} | jq -r '.number')
+          echo "::set-output name=issue_number::$issue_number"
+      - name: Get Current Date
+        id: getcurrent_date
+        run: |
+          current_date=$(date +"%Y-%m-%d")
+          echo "::set-output name=current_date::$current_date"
       
-    - name: Use Test Cases
-      if: always()
-      run: |
-        cd $GITHUB_WORKSPACE/testcase
-        pytest -v --cov=../sourcecode --junitxml=report.xml
-      # pytest -v testcase/ --cov=sourcecode/
-
-    - if: ${{ failure() }}
-      name: Create Issue on Failed workflow
-      uses: dacbd/create-issue-action@main
-      with:
-        token: ${{ github.token }}
-        title: Action workflow Workflow name - `${{ github.workflow }}` failed.
-        body: |
-          ### Context
-          [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          [Codebase](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
-          Workflow name - `${{ github.workflow }}`
-          Job -           `${{ github.job }}`
-          status -        `${{ job.status }}`
-          assignees: `${{ github.actor }}`
-    - name: Create Test Results Folder
-      run: |
-        mkdir testresults
-        mv testcase/report.xml ./testresults
-        # mv report.xml ./testresults
-        
-    - name: Upload Test Results
-      uses: actions/upload-artifact@v2
-      with: 
-        name: testResults
-        path: testresults
-    
-    - name: Download Remote Test Results
-      uses: actions/download-artifact@v2
-      with:
-        name: testResults
-
-    - name: Publish Test Results
-      uses: EnricoMi/publish-unit-test-result-action/composite@v2
-      if: always()
-      with:
-        junit_files: "report.xml"
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v2
+        with: 
+          name: Issue ${{ steps.getissue_number.outputs.issue_number }} (${{ steps.getcurrent_date.outputs.current_date }})
+          path: testresults/report.xml
+      
+      - name: Download Remote Test Results
+        uses: actions/download-artifact@v2
+        with:
+          name: testResults
+  
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
+        if: always()
+        with:
+          junit_files: "report.xml"
