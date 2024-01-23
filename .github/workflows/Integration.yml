@@ -45,7 +45,7 @@ jobs:
             
   TestResults:
     name: Test Artifact
-    needs: Testing
+    needs: Build_and_Testing
     runs-on: ubuntu-latest
     if: ${{ success() }}
     steps:
