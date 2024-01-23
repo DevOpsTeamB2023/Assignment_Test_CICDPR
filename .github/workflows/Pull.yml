@@ -49,23 +49,21 @@ jobs:
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
           
-      - name: Get Check Status
-        uses: actions/get-status-checks@v7.2.4
-        with:
-          ref: ${{ github.sha }}
-
-      - uses: actions/checkout@v3
-      - name: Check All Successful checks, then Merge
-        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
+      - name: Get check details
         run: |
-          checks_output=$(echo "${{ steps.get_status_checks.outputs.checks }}" | jq -r '.[] | { name: .name, state: .state }')
-          checks_passed=$(echo "$checks_output" | jq -r '.[] | select(.state == "success") | .name')
-          echo "Passed checks: $checks_passed"
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          CHECKS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/checks)
+          echo "$CHECKS"
 
-      - name: Continue if all Checks pass
-        if: steps.get_status_checks.outputs.checks || length == steps.get_status_checks.outputs.checks || select(.state == "success") || length
+      - name: Parse and analyze checks
         run: |
-          echo "All checks passed, ready to merge"
+          jq -r '.[] | { name: .name, state: .state }' <<< "$CHECKS" | while read -r CHECK; do
+            NAME=$(echo "$CHECK" | cut -d ' ' -f1)
+            STATE=$(echo "$CHECK" | cut -d ' ' -f2)
+            if [[ "$STATE" != "success" ]]; then
+              echo "Check '$NAME' failed!"
+            fi
+          done
   
   Merge_Sucess:
   # Merge only if Review is approved and all checks pass
