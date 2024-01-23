@@ -7,7 +7,9 @@ on:
 jobs:
   Requests_Build:
     name: Request Build
-    uses: ./.github/workflows/BuildingSetUp.yml
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/workflows/BuildingSetUp.yml
 
   Requests_AddReviewer:
     name: Adding Reviewer
