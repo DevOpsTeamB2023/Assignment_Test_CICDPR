@@ -37,7 +37,7 @@ jobs:
     if: github.event_name == 'pull_request_review'
     
     steps:          
-      - name: Check Code has been Reviewed
+      - name: Get Pull Request Review
         id: get_reviews
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
@@ -46,18 +46,16 @@ jobs:
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
+          
+      - name: Get Pull Request Checks
+      - uses: actions/get-status-checks@v7
+        id: get_checks
+        with:
+          ref: ${{ github.sha }}
 
+      - name: Check Review Approved and Successful Checks, Merge
       - uses: actions/checkout@v3
-      - name: Check All Successful checks, then Merge
-        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
-        run: |
-          if [[$CHECKS_SUCCEEDED == true ]]; then
-            echo "All checks passed, proceeding with merge."
-          else
-            echo "Checks failed, not merging."
-            exit 1 # Terminate the job if checks fail
-          fi
-
+        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1 && ${{ steps.get-status-checks.outputs.all-checks-passed == 'true' }}
       - uses: pascalgn/automerge-action@v0.15.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
