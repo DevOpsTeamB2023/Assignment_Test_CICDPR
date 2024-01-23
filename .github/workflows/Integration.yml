@@ -19,8 +19,9 @@ jobs:
       - name: Use Test Cases
         if: always()
         run: |
-          cd $GITHUB_WORKSPACE/testcase
+          cd ../testcase
           pytest -v testcase/ --cov=../sourcecode/ --junitxml=report.xml
+        # cd $GITHUB_WORKSPACE/testcase
 
       - if: ${{ failure() }}
         name: Create Issue on Failed workflow
