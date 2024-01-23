@@ -1,10 +1,12 @@
 #Triggered by any pull reques from repository
 name: Pull Request
+
 on:
   pull_request:
   pull_request_review:
     types:
       - submitted
+
 jobs:
   Requests_Build:
     uses: ./.github/workflows/BuildingSetUp.yml #resuable workflow
@@ -37,8 +39,8 @@ jobs:
     name: Approve Review and Merge
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
-    
-    steps:          
+
+    steps:
       - name: Get Review Status
         id: get_reviews
         run: |
@@ -48,23 +50,21 @@ jobs:
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
-      
+
       - name: Get Check Status
         id: get_checks
         uses: actions/get-status-checks@v7.2.4
         with:
           ref: ${{ github.sha }}
-  
-  Merge_Sucess:
-  # Merge only if Review is approved and all checks pass
-    name: Merge Request
-    needs: Response_Review
-    if: github.event_name == 'pull_request_review'
-    runs-on: ubuntu-latest
-    steps:
+
       - name: Merge Action
-        if: ${{ steps.get_reviews.outputs.approved_reviews }} => 1 && ${{ steps.get_checks.outputs.success_checks }} == steps.get-status-checks.outputs.checks
-      - uses: pascalgn/automerge-action@v0.15.6
+        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1 && steps.get_checks.outputs.checks
+        run: |
+          # Replace this with your actual merging logic
+          echo "Merging pull request..."
+          # ... your commands to merge the pull request
+
+      - uses: pascalgn/automerge-action@v15.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
