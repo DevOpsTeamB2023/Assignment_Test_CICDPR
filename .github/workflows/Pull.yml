@@ -6,7 +6,7 @@ on:
       - submitted
 jobs:
   Requests_Build:
-    uses: ./.github/workflows/BuildSetUp.yml
+    uses: ./.github/workflows/BuildingSetUp.yml
     
   Requests_AddReviewer:
     name: Adding Reviewer
