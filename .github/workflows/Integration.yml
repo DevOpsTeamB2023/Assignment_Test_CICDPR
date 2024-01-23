@@ -10,7 +10,15 @@ on:
 jobs:
   SetUp:
     name: SetUp
-    uses: ./.github/workflows/BuildingSetUp.yml
+    runs-on: ubuntu-latest
+    steps:
+    - name: set up
+      uses: ./.github/workflows/BuildingSetUp.yml
+      
+    - name: Checkout Codes
+      uses: actions/checkout@v4
+      with:
+        repository: DevOpsTeamB2023/Assignment_Test_CICDPR
       
   Testing:
     name: Testing Code
