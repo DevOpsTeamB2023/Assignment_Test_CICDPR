@@ -19,7 +19,7 @@ jobs:
         id: determine_version
         run: |
           # Extract version number from the commit message eg. v1.0.0: added feature 2.0
-          version_number=$(git log --format=%B -n 1 ${{ github.sha }} | grep -oP '^v\d+\.\d+\.\d+')
+          version_number=$(git log --format=%B -n 1 ${{ github.sha }} | awk '/^v[0-9]+\.[0-9]+\.[0-9]+/{print $1}')
 
           # create a issue for member to release the code
           if [ -z "$version_number" ]; then
