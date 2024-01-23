@@ -52,7 +52,7 @@ jobs:
       - name: Check All Successful checks, then Merge
         if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
         run: |
-          if [[$CHECKS_SUCCEEDED == true ]]; then
+          if ${{ checks-succeeded == true }} ; then
             echo "All checks passed, proceeding with merge."
           else
             echo "Checks failed, not merging."
