@@ -8,13 +8,13 @@ on:
     branches: [main]
     
 jobs:
-  SetUp:
-    name: SetUp
-    uses: ./.github/workflows/BuildingSetUp.yml
+  # SetUp:
+  #   name: SetUp
+  #   uses: ./.github/workflows/BuildingSetUp.yml
       
-  Build_and_Testing:
+  Build_and_Tes:
     name: Testing Code
-    needs: SetUp
+    # needs: SetUp
     runs-on: ubuntu-latest
     steps:
       - name: Install Dependencies
