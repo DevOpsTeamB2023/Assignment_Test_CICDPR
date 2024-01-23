@@ -8,50 +8,49 @@ on:
     branches: [main]
     
 jobs:
-  # SetUp:
-  #   name: SetUp
-  #   uses: ./.github/workflows/BuildingSetUp.yml
-      
-  Build_and_Test:
-    name: Testing Code
-    # needs: SetUp
+  build:
+    name: Build and Test for Integration
     runs-on: ubuntu-latest
     steps:
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest pytest-cov
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          
-      - name: Checkout Codes
-        uses: actions/checkout@v4
-        with:
-          repository: DevOpsTeamB2023/Assignment_Test_CICDPR
-      - name: Use Test Cases
-        if: always()
-        run: |
-          cd $GITHUB_WORKSPACE/testcase
-          pytest -v --cov=../sourcecode --junitxml=report.xml
-        # pytest -v testcase/ --cov=sourcecode/
-  
-      - if: ${{ failure() }}
-        name: Create Issue on Failed workflow
-        uses: dacbd/create-issue-action@main
-        with:
-          token: ${{ github.token }}
-          title: Action workflow Workflow name - `${{ github.workflow }}` failed.
-          body: |
-            ### Context
-            [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            [Codebase](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
-            Workflow name - `${{ github.workflow }}`
-            Job -           `${{ github.job }}`
-            status -        `${{ job.status }}`
-            assignees: `${{ github.actor }}`
-            
-  TestResults:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10' 
+        
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-cov
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Checkout Codes
+      uses: actions/checkout@v4
+      with:
+        repository: DevOpsTeamB2023/Assignment_Test_CICDPR
+      
+    - name: Use Test Cases
+      if: always()
+      run: |
+        cd $GITHUB_WORKSPACE/testcase
+        pytest -v --cov=../sourcecode --junitxml=report.xml
+      # pytest -v testcase/ --cov=sourcecode/
+
+    - if: ${{ failure() }}
+      name: Create Issue on Failed workflow
+      uses: dacbd/create-issue-action@main
+      with:
+        token: ${{ github.token }}
+        title: Action workflow Workflow name - `${{ github.workflow }}` failed.
+        body: |
+          ### Context
+          [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          [Codebase](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
+          Workflow name - `${{ github.workflow }}`
+          Job -           `${{ github.job }}`
+          status -        `${{ job.status }}`
+          assignees: `${{ github.actor }}`
+  test_result:
     name: Test Artifact
-    needs: Build_and_Test
+    needs: build
     runs-on: ubuntu-latest
     if: ${{ success() }}
     steps:
@@ -60,6 +59,7 @@ jobs:
           mkdir testresults
           mv testcase/report.xml ./testresults
         # mv report.xml ./testresults
+          
       - name: Get Issue Number
         id: getissue_number
         if: ${{ failure() }}
@@ -71,7 +71,7 @@ jobs:
         run: |
           current_date=$(date +"%Y-%m-%d")
           echo "::set-output name=current_date::$current_date"
-      
+            
       - name: Upload Test Results
         uses: actions/upload-artifact@v2
         with: 
@@ -88,3 +88,4 @@ jobs:
         if: always()
         with:
           junit_files: "report.xml"
+
