@@ -56,7 +56,7 @@ jobs:
 
       - name: Check Review Approved and Successful Checks, Merge
         uses: actions/checkout@v3
-        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1 && ${{ steps.get-checks.outputs.all-checks-passed == 'true' }}
+        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1 && ${{ steps.get-status-checks.outputs.all-checks-passed == 'true' }}
       - uses: pascalgn/automerge-action@v0.15.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
