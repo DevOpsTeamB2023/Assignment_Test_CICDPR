@@ -48,19 +48,18 @@ jobs:
           Job -           `${{ github.job }}`
           status -        `${{ job.status }}`
           assignees: `${{ github.actor }}`
+    - name: Create Test Results Folder
+      run: |
+        mkdir testresults
+        mv testcase/report.xml ./testresults
+        # mv report.xml ./testresults
           
   TestResults:
     name: Test Artifact
     needs: build_and_test
     runs-on: ubuntu-latest
     if: ${{ success() }}
-    steps:
-      - name: Create Test Results Folder
-        run: |
-          mkdir testresults
-          mv testcase/report.xml ./testresults
-          # mv report.xml ./testresults
-      
+    steps:      
       - name: Get Issue Number
         id: getissue_number
         if: ${{ failure() }}
