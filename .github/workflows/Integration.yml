@@ -41,7 +41,7 @@ jobs:
     name: Test Artifact
     needs: Testing
     runs-on: ubuntu-latest
-    if: ${{ sucess() }}
+    if: ${{ success() }}
     steps:
       - name: Create Test Results Folder
         run: |

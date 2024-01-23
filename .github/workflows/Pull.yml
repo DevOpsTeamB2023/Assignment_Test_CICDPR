@@ -6,7 +6,6 @@ on:
       - submitted
 jobs:
   Requests_Build:
-    name: Request Build
     uses: ./.github/workflows/BuildingSetUp.yml
 
   Requests_AddReviewer:
@@ -47,7 +46,7 @@ jobs:
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
-
+          
       - name: Get Check Status
       - uses: actions/checkout@v3
       - uses: actions/get-status-checks@v7.2.4

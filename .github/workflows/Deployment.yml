@@ -1,41 +1,61 @@
 name: Test Deployment
 on:
-  release:
+  workflow_run:
+    workflows:
+      - "Continuous Integration"
     types:
-      - created
+      - completed
 
 jobs:
-  deploy:
-    name: Deployment
+
+  get_version:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v4
-      with:
-        python-version: '3.10' 
-    - name: install plugin
-      run: |
-        pip install pytest pytest-cov
-    - name: list current files
-      run: |
-        ls
-    - name: Deploy sourcecode
-      run: |
-        cp -r sourcecode/* .
-  Deploy_To_Git_Release:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: get the version number from commit message and create issue if not tag
+        id: get_version
+        run: |
+          # Extract version number from the commit message eg. v1.0.0: added feature 2.0
+          version_number=$(git log --format=%B -n 1 ${{ github.sha }} | awk '/^v[0-9]+\.[0-9]+\.[0-9]+/{print $1}')
+          
+          # Debugging: Print version number
+          echo "Version Number: $version_number"
+
+          # create an issue for a member to release the code
+          if [ -z "$version_number" ]; then
+            # Create an issue
+            issue_title="Unable to determine version number"
+            issue_body="Please create a valid version tag and release. Assigning to @${{ github.actor }}."
+            issue_assignee="${{ github.actor }}"
+            
+            echo "::set-output name=create_issue::true"
+            echo "::set-output name=issue_title::${issue_title}"
+            echo "::set-output name=issue_body::${issue_body}"
+            echo "::set-output name=issue_assignee::${issue_assignee}"
+          fi
+          
+          echo "::set-output name=version_number::${version_number}"
+        
+  git_release:
+    needs: get_version
     name: Release to Git for Deployment
-    needs: deploy
     runs-on: ubuntu-latest
+    if: ${{ needs.get_version.outputs.version_number != '' }}
+
     steps:
-    - name: Set environment version
-      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-    - name: create a release
-      id: create-new-release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-      with:
-        tag_name: v${{ steps.read_version.outputs.version }}
-        release_name: Release v${{ steps.read_version.outputs.version }}
-        body: |
-          Release notes for v${{ steps.read_version.outputs.version }}.
+      - name: Set environment version
+        run: echo "RELEASE_VERSION=${{ needs.get_version.outputs.version_number }}" >> $GITHUB_ENV
+  
+      - name: Create a release
+        id: create-new-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          tag_name: v${{ env.RELEASE_VERSION }}
+          release_name: Release v${{ env.RELEASE_VERSION }}
+          body: |
+            Release notes for v${{ env.RELEASE_VERSION }}.
