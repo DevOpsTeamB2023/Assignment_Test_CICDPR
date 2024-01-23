@@ -19,7 +19,7 @@ jobs:
       - name: Use Test Cases
         if: always()
         run: |
-          cd $GITHUB_WORKSPACE/testcase
+          cd Assignment_Test_CICDPR/testcase
           pytest -v testcase/ --cov=../sourcecode/ --junitxml=report.xml
 
       - if: ${{ failure() }}
