@@ -20,9 +20,8 @@ jobs:
         if: always()
         run: |
           cd $GITHUB_WORKSPACE/testcase
-          pytest -v --cov=../sourcecode --junitxml=report.xml
-        # pytest -v testcase/ --cov=sourcecode/
-  
+          pytest -v testcase/ --cov=../sourcecode/ --junitxml=report.xml
+
       - if: ${{ failure() }}
         name: Create Issue on Failed workflow
         uses: dacbd/create-issue-action@main
@@ -37,18 +36,37 @@ jobs:
             Job -           `${{ github.job }}`
             status -        `${{ job.status }}`
             assignees: `${{ github.actor }}`
-  
+
+  TestResults:
+    name: Test Artifact
+    needs: Testing
+    runs-on: ubuntu-latest
+    if: ${{ sucess() }}
+    steps:
       - name: Create Test Results Folder
         run: |
           mkdir testresults
           mv testcase/report.xml ./testresults
           # mv report.xml ./testresults
-          
+
+      - name: Get Issue Number
+        id: getissue_number
+        if: ${{ failure() }}
+        run: |
+          issue_number=$(gh issue create --title "${{ github.workflow }} failed" --body "${{ github.workflow }} failed. See details at https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" --repo ${{ github.repository }} | jq -r '.number')
+          echo "::set-output name=issue_number::$issue_number"
+
+      - name: Get Current Date
+        id: getcurrent_date
+        run: |
+          current_date=$(date +"%Y-%m-%d")
+          echo "::set-output name=current_date::$current_date"
+      
       - name: Upload Test Results
         uses: actions/upload-artifact@v2
         with: 
-          name: testResults
-          path: testresults
+          name: Issue ${{ steps.getissue_number.outputs.issue_number }} (${{ steps.getcurrent_date.outputs.current_date }})
+          path: testresults/report.xml
       
       - name: Download Remote Test Results
         uses: actions/download-artifact@v2
