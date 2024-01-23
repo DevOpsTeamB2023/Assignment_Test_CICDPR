@@ -27,7 +27,7 @@ jobs:
           else
             REVIEWERS="koayyiting"
           fi
-          echo "::set-output name=reviewers::$REVIEWERS"
+          echo "reviewers=$REVIEWERS" >> $GITHUB_OUTPUT
 
       - name: Add Reviewers
         uses: madrapps/add-reviewers@v1
@@ -48,15 +48,16 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
-          echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"  # Added `::set-output`
+          echo "approved_reviews=$APPROVED_REVIEWS" >> $GITHUB_OUTPUT
 
   Merge_Request:
-    if: ${{ needs.Response_Review.outputs.approved_reviews }} >= 1  # Corrected expression and job reference
+    if: ${{ needs.Response_Review.outputs.approved_reviews }} >= 1
     needs: Response_Review
     runs-on: ubuntu-latest
     steps:
+      - uses: github/checkout@4
       - name: Get Check Status
-        uses: actions/get-status-checks@v7.2.4
+        uses: actions/get-status-checks@8
         with:
           ref: ${{ github.sha }}
       - name: Check For Successful Builds
@@ -67,7 +68,7 @@ jobs:
           else
             echo "Checks have not all passed. Merge cannot be performed."
           fi
-      - uses: pascalgn/automerge-action@v4
+      - uses: pascalgn/automerge-action@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
