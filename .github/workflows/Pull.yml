@@ -38,7 +38,7 @@ jobs:
     if: github.event_name == 'pull_request_review'
     
     steps:          
-      - name: Check Code has been Reviewed
+      - name: Get Review Status
         id: get_reviews
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
@@ -48,21 +48,35 @@ jobs:
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
 
+      - name: Get Check Status
+      - uses: actions/checkout@v3
+      - uses: actions/get-status-checks@v7.2.4
+        with:
+          ref: ${{ github.sha }}
+
       - uses: actions/checkout@v3
       - name: Check All Successful checks, then Merge
         if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
         run: |
-          if [[$CHECKS_SUCCEEDED == true ]]; then
-            echo "All checks passed, proceeding with merge."
-          else
-            echo "Checks failed, not merging."
-            exit 1 # Terminate the job if checks fail
-          fi
+          checks_output=$(echo "${{ steps.get_status_checks.outputs.checks }}" | jq -r '.[] | { name: .name, state: .state }')
+          checks_passed=$(echo "$checks_output" | jq -r '.[] | select(.state == "success") | .name')
+          echo "Passed checks: $checks_passed"
 
+      - name: Continue if all Checks pass
+        if: steps.analyze_check_statuses.outputs.checks_passed | length == steps.get_status_checks.outputs.checks | length
+        run: |
+          echo "All checks passed, ready to merge" 
+          
+  Merge_Sucess:
+    name: Merge Request
+    needs: Response_Review
+    if: steps.run_checks.outputs.checks_passed | length == steps.get_status_checks.outputs.checks | length
+    runs-on: ubuntu-latest
+    steps:
       - uses: pascalgn/automerge-action@v0.15.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           required_labels: ${{ github.context.payload.pull_request.title }}
           title: ${{github.context.payload.pull_request.number}} + " pull request merged"
-          merge_method: merge  # Crucial for merging to the set branch
+          merge_method: merge #merging to set branch
