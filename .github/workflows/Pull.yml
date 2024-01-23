@@ -55,7 +55,7 @@ jobs:
     needs: Response_Review
     runs-on: ubuntu-latest
     steps:
-      - uses: github/checkout@4
+      - uses: action/checkout@4
       - name: Get Check Status
         uses: actions/get-status-checks@8
         with:
