@@ -15,13 +15,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Determine version type
-        id: determine_version
+      - name: get the version number from commit message
+        id: get_version
         run: |
           # Extract version number from the commit message eg. v1.0.0: added feature 2.0
           version_number=$(git log --format=%B -n 1 ${{ github.sha }} | awk '/^v[0-9]+\.[0-9]+\.[0-9]+/{print $1}')
+          
+          # Debugging: Print version number
+          echo "Version Number: $version_number"
 
-          # create a issue for member to release the code
+          # create an issue for a member to release the code
           if [ -z "$version_number" ]; then
             # Create an issue
             issue_title="Unable to determine version number"
@@ -33,7 +36,7 @@ jobs:
             echo "::set-output name=issue_body::${issue_body}"
             echo "::set-output name=issue_assignee::${issue_assignee}"
           fi
-
+          
           echo "::set-output name=version_number::${version_number}"
         
   git_release:
