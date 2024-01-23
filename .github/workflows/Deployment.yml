@@ -2,7 +2,7 @@ name: Test Deployment
 on:
   workflow_run:
     workflows:
-      - "Integration"
+      - "Continuous Integration"
     types:
       - completed
 
