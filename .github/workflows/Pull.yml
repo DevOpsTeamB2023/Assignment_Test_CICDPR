@@ -6,6 +6,7 @@ on:
       - submitted
 jobs:
   Requests_Build:
+    name: Request Build
     uses: ./.github/workflows/BuildingSetUp.yml
 
   Requests_AddReviewer:
