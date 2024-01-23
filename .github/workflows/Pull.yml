@@ -1,4 +1,4 @@
-#Triggered by any pull reques from repository
+# Triggered by any pull request from repository
 name: Pull Request
 
 on:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   Requests_Build:
-    uses: ./.github/workflows/BuildingSetUp.yml #resuable workflow
+    uses: ./.github/workflows/BuildingSetUp.yml # Reusable workflow
 
   Requests_AddReviewer:
     name: Adding Reviewer
@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Reviewer
         id: toadd_reviewers
-        #Default Reviewer = Technical Lead | Developer review Technical Lead
+        # Default Reviewer = Technical Lead | Developer review Technical Lead
         run: |
           AUTHOR=${{ github.event.pull_request.user.login }}
           if [ "$AUTHOR" == "koayyiting" ]; then
@@ -36,10 +36,9 @@ jobs:
           reviewers: ${{ steps.toadd_reviewers.outputs.reviewers }}
 
   Response_Review:
-    name: Review Status
+    name: Approve Review and Merge  # Updated name for clarity
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
-
     steps:
       - name: Get Review Status
         id: get_reviews
@@ -49,11 +48,10 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
-          echo "approved_reviews=$APPROVED_REVIEWS" >> $GITHUB_OUTPUT
-
+          echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"  # Added `::set-output`
 
   Merge_Request:
-    if: ${{ steps.get_reviews.outputs.approved_reviews }} => 1
+    if: ${{ needs.Response_Review.outputs.approved_reviews }} >= 1  # Corrected expression and job reference
     needs: Response_Review
     runs-on: ubuntu-latest
     steps:
@@ -63,7 +61,8 @@ jobs:
           ref: ${{ github.sha }}
       - name: Check For Successful Builds
         run: |
-          if [ "${{ steps.get-status-checks.outputs.checks }}" == "${{ steps.get-status-checks.outputs.checks | select(.state == 'success') | length }}" ]; then
+          successful_checks=$(echo "${{ steps.get-status-checks.outputs.checks }}" | jq 'map(select(.state == "success")) | length')  # Corrected expression
+          if [ "$successful_checks" == "${{ github.event.pull_request.commits }}" ]; then  # Assuming check for successful builds per commit
             # Proceed with the merge if checks are successful
           else
             echo "Checks have not all passed. Merge cannot be performed."
