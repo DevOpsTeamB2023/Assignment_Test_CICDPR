@@ -33,10 +33,9 @@ jobs:
           reviewers: ${{ steps.toadd_reviewers.outputs.reviewers }}
 
   Response_Review:
-    name: Approve Review and Merge
+    name: Review Approve, Merge
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
-    
     steps:          
       - name: Check Code has been Reviewed
         id: get_reviews
@@ -56,7 +55,7 @@ jobs:
           
       - uses: pascalgn/automerge-action@v0.15.6
       - name: Successful Checks to Merge Pull Request
-        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1  && ${{ steps.get-status-checks.outputs.all-checks-passed == 'true' }}
+        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1  && ${{ steps.get-checks.outputs.all-checks-passed == 'true' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
