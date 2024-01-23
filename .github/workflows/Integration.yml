@@ -19,7 +19,7 @@ jobs:
       - name: Use Test Cases
         if: always()
         run: |
-          cd Assignment_Test_CICDPR/testcase
+          cd ./testcase
           pytest -v testcase/ --cov=../sourcecode/ --junitxml=report.xml
 
       - if: ${{ failure() }}
