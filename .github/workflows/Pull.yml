@@ -1,3 +1,4 @@
+#Triggered by any pull reques from repository
 name: Pull Request
 on:
   pull_request:
@@ -6,7 +7,7 @@ on:
       - submitted
 jobs:
   Requests_Build:
-    uses: ./.github/workflows/BuildingSetUp.yml
+    uses: ./.github/workflows/BuildingSetUp.yml #resuable workflow
 
   Requests_AddReviewer:
     name: Adding Reviewer
@@ -16,6 +17,7 @@ jobs:
     steps:
       - name: Reviewer
         id: toadd_reviewers
+        #Default Reviewer = Technical Lead | Developer review Technical Lead
         run: |
           AUTHOR=${{ github.event.pull_request.user.login }}
           if [ "$AUTHOR" == "koayyiting" ]; then
@@ -65,8 +67,9 @@ jobs:
         if: steps.analyze_check_statuses.outputs.checks_passed | length == steps.get_status_checks.outputs.checks | length
         run: |
           echo "All checks passed, ready to merge" 
-          
+  
   Merge_Sucess:
+  # Merge only if Review is approved and all checks pass
     name: Merge Request
     needs: Response_Review
     if: steps.run_checks.outputs.checks_passed | length == steps.get_status_checks.outputs.checks | length
@@ -78,4 +81,4 @@ jobs:
         with:
           required_labels: ${{ github.context.payload.pull_request.title }}
           title: ${{github.context.payload.pull_request.number}} + " pull request merged"
-          merge_method: merge #merging to set branch
+          merge_method: merge
