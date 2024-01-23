@@ -56,9 +56,9 @@ jobs:
           
       - uses: actions/checkout@v3
       - name: Check All Successful checks, then Merge
-        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1 && ${{ steps.get-status-checks.outputs.all-checks-passed == 'true' }}
+        if: ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
         run: |
-          if ${{ checks-succeeded == true }} ; then
+          if ${{ steps.get-status-checks.outputs.all-checks-passed == 'true' }} ; then
             echo "All checks passed, proceeding with merge."
           else
             echo "Checks failed, not merging."
