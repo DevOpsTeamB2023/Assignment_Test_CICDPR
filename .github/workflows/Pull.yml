@@ -63,7 +63,7 @@ jobs:
           echo "Passed checks: $checks_passed"
 
       - name: Continue if all Checks pass
-        if: steps.analyze_check_statuses.outputs.checks_passed | length == steps.get_status_checks.outputs.checks | length
+        if: steps.analyze_check_statuses.outputs.checks_passed | length == steps.get_status_checks.outputs.checks
         run: |
           echo "All checks passed, ready to merge" 
   
@@ -71,7 +71,7 @@ jobs:
   # Merge only if Review is approved and all checks pass
     name: Merge Request
     needs: Response_Review
-    if: steps.run_checks.outputs.checks_passed | length == steps.get_status_checks.outputs.checks | length
+    if: steps.run_checks.outputs.checks_passed | length == steps.get_status_checks.outputs.checks
     runs-on: ubuntu-latest
     steps:
       - uses: pascalgn/automerge-action@v0.15.6
