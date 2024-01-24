@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Reviewer
         id: toadd_reviewers
-        # Default Reviewer = Technical Lead | Developer review Technical Lead
+        # Defines Reviewer = (default) Technical Lead | Developer review Technical Lead
         run: |
           AUTHOR=${{ github.event.pull_request.user.login }}
           if [ "$AUTHOR" == "koayyiting" ]; then
@@ -29,6 +29,7 @@ jobs:
           fi
           echo "::set-ouput name=reviewers::$REVIEWERS"
 
+      # Add Reviewer to Pull Request
       - name: Add Reviewers
         uses: madrapps/add-reviewers@v1
         with:
@@ -40,6 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
     steps:
+    # Retrieve Reviews approved
       - name: Get Review Status
         id: get_reviews
         run: |
@@ -55,6 +57,7 @@ jobs:
     needs: Response_Review
     runs-on: ubuntu-latest
     steps:
+    # Retrieve Pull Request status of checks
       - uses: actions/checkout@v4
       - name: Get Check Status
         id: get-status
@@ -63,22 +66,23 @@ jobs:
           ref: ${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      #Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
-      - uses: actions/checkout@v4
+      # Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
+      - uses: actions/checkout@v3
       - name: Label Pull Request as automerge
         if: ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }}
-        uses: actions/labeler@v5
+        uses: octokit/request-action@v2
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          labels: automerge
-          pr-number: ${{ github.event.pull_request.number }}
+          route: POST /repos/${{ github.repository }}/issues/${{ github.event.number }}/labels
+          token: ${{ secrets.GITHUB_TOKEN }}
+          body: automerge
 
+      # Merge Pull Request action 
       - uses: actions/checkout@v4
       - name: Auto Merge Pull Request
         uses: "pascalgn/automerge-action@v0.16.2"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          required_labels: ${{ github.context.payload.pull_request.title }}
+          required_labels: automerge
           title: ${{ github.event.pull_request.number }} + " pull request merged"
           merge_method: merge
