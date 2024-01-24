@@ -55,9 +55,9 @@ jobs:
     needs: Response_Review
     runs-on: ubuntu-latest
     steps:
-      - name: Get Check Status
       - uses: actions/checkout@v4
-      - uses: actions/get-status-checks@v8
+      - name: Get Check Status
+        uses: actions/get-status-checks@v8
         with:
           ref: ${{ github.sha }}
       - name: Check For Successful Builds
