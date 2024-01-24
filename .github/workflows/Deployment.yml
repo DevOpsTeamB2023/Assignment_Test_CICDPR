@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: get the version number from commit message and create issue if not tag
+      - name: get the version number from commit message and create issue if no version number
         id: get_version
         run: |
           # Extract version number from the commit message eg. v1.0.0: added feature 2.0
