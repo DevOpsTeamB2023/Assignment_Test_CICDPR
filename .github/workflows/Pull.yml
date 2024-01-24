@@ -36,7 +36,7 @@ jobs:
           reviewers: ${{ steps.toadd_reviewers.outputs.reviewers }}
 
   Response_Review:
-    name: Approve Review and Merge  # Updated name for clarity
+    name: Approve Review and Merge
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
     steps:
@@ -55,23 +55,26 @@ jobs:
     needs: Response_Review
     runs-on: ubuntu-latest
     steps:
-      - uses: action/checkout@4
+      - uses: actions/checkout@4
       - name: Get Check Status
         uses: actions/get-status-checks@8
         with:
           ref: ${{ github.sha }}
       - name: Check For Successful Builds
         run: |
-          successful_checks=$(echo "${{ steps.get-status-checks.outputs.checks }}" | jq 'map(select(.state == "success")) | length')  # Corrected expression
-          if [ "$successful_checks" == "${{ github.event.pull_request.commits }}" ]; then  # Assuming check for successful builds per commit
+          successful_checks=$(echo "${{ steps.get-status-checks.outputs.checks }}" | jq 'map(select(.state == "success")) | length')
+          if [ "$successful_checks" == "${{ github.event.pull_request.commits }}" ]; then
             # Proceed with the merge if checks are successful
           else
             echo "Checks have not all passed. Merge cannot be performed."
           fi
-      - uses: pascalgn/automerge-action@latest
+
+      - name: Auto Merge Pull Request
+        uses: "pascalgn/automerge-action@0.16.2"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
+          merge_labels: automerge
           required_labels: ${{ github.context.payload.pull_request.title }}
           title: ${{ github.event.pull_request.number }} + " pull request merged"
           merge_method: merge
