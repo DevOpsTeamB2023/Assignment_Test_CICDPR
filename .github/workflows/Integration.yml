@@ -22,7 +22,7 @@ jobs:
     # Run installation of pytest in Testing
     - name: Check PyTest Installation
       if: ${{ ! needs.Build_SetUp.outputs.pytest_installed }}
-      run: pip install pytest
+      run: pip install pytest pytest-cov
       
     - name: Checkout Codes
       uses: actions/checkout@v4
