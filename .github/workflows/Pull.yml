@@ -69,7 +69,6 @@ jobs:
         uses: actions/labeler@v4
         with: 
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          labels: 'automerge'
 
       - uses: actions/checkout@v4
       - name: Auto Merge Pull Request
@@ -78,7 +77,6 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          merge_labels: automerge
           required_labels: ${{ github.context.payload.pull_request.title }}
           title: ${{ github.event.pull_request.number }} + " pull request merged"
           merge_method: merge
