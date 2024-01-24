@@ -35,6 +35,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           reviewers: ${{ steps.toadd_reviewers.outputs.reviewers }}
+          re-request-when-changes-requested: true
 
   Response_Review:
     name: Approve Review and Merge
