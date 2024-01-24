@@ -1,5 +1,8 @@
 name: Test Deployment
 on:
+  push:
+    paths:
+      - 'sourcecode/**'
   workflow_run:
     workflows:
       - "Continuous Integration"
