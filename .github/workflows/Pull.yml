@@ -70,7 +70,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Label Pull Request as automerge
         if: ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }}
-        uses: octokit/request-action@v2
+        uses: octokit/request-action@v2.1.9
         with:
           route: POST /repos/${{ github.repository }}/issues/${{ github.event.number }}/labels
           token: ${{ secrets.GITHUB_TOKEN }}
