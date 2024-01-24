@@ -58,11 +58,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Get Check Status
         id: get_status
-        uses: actions/get-status@v4
+        uses: danieldeichfuss/get-status@v0.0.10
         with:
-          repository: 'DevOpsTeamB2023/Assignment_Test_CICDPR'
-          token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.sha }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Check For Successful Builds
         run: |
