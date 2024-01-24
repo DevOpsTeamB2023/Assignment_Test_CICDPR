@@ -57,7 +57,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Get Check Status
-        uses: actions/get-status-checks@v8
+        id: get_status
+        uses: actions/get-status@v4
         with:
           repository: 'DevOpsTeamB2023/Assignment_Test_CICDPR'
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -65,11 +66,12 @@ jobs:
           
       - name: Check For Successful Builds
         run: |
-          successful_checks=$(echo "${{ steps.get-status-checks.outputs.checks }}" | jq 'map(select(.state == "success")) | length')
-          if [ "$successful_checks" == "${{ github.event.pull_request.commits }}" ]; then
+          status =$(echo "${{ steps.get-status.outputs.get_status }}" | jq 'map(select(.status == "success")) )
+          if [ "$status" == "${{ github.event.pull_request.commits }}" ]; then
             # Proceed with the merge if checks are successful
           else
             echo "Checks have not all passed. Merge cannot be performed."
+            exit 1
           fi
 
       - uses: actions/checkout@v4
