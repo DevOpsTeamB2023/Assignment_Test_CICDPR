@@ -34,7 +34,7 @@ jobs:
         uses: madrapps/add-reviewers@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          reviewers: koayyiting
+          reviewers: '${{ steps.toadd_reviewers.outputs.reviewers }}'
           re-request-when-changes-requested: true
 
   Response_Review:
