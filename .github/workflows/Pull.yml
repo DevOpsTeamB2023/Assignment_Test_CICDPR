@@ -58,7 +58,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Get Check Status
         id: get-status
-        uses: danieldeichfuss/get-status@v0
+        uses: danieldeichfuss/get-status@v0.0.10
         with:
           ref: ${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
