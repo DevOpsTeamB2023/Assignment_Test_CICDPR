@@ -20,7 +20,7 @@ jobs:
           echo "Workflow Conclusion: ${{ github.event.workflow_run.conclusion }}"
           echo "Modified Files: ${{ github.event.head_commit.modified }}"
           echo "Workflow: ${{ github.workflow }}"
-          echo "Triggered Workflow: ${{ github.event.workflow_run.workflow }}"
+          echo "Triggered Workflow: ${{ github.event.workflow_run.name }}"
           echo "Actor: ${{ github.actor }}"
           echo "Commit SHA: ${{ github.sha }}"
           echo "Event Name: ${{github.event.workflow_run.event}}" 
