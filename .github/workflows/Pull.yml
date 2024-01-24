@@ -63,22 +63,38 @@ jobs:
           ref: ${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      #Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
-      - uses: actions/checkout@v4
-      - name: Label Pull Request as automerge
-        uses: actions/labeler@v4
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          labels: automerge
-          pr-number: ${{ github.event.pull_request.number }}
+      # #Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
+      # - uses: actions/checkout@v4
+      # - name: Label Pull Request as automerge
+      #   uses: actions/labeler@v4
+      #   with:
+      #     repo-token: ${{ secrets.GITHUB_TOKEN }}
+      #     labels: automerge
+      #     pr-number: ${{ github.event.pull_request.number }}
 
-      - uses: actions/checkout@v4
-      - name: Auto Merge Pull Request
+      # - uses: actions/checkout@v4
+      # - name: Auto Merge Pull Request
+      #   if: ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }}
+      #   uses: "pascalgn/automerge-action@v0.16.2"
+      #   env:
+      #     GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      #   with:
+      #     required_labels: ${{ github.context.payload.pull_request.title }}
+      #     title: ${{ github.event.pull_request.number }} + " pull request merged"
+      #     merge_method: merge
+
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
+          sudo apt-add-repository -y https://cli.github.com/packages
+          sudo apt-get update
+          sudo apt-get install gh
+      
+      - name: Merge pull request
         if: ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }}
-        uses: "pascalgn/automerge-action@v0.16.2"
         env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        with:
-          required_labels: ${{ github.context.payload.pull_request.title }}
-          title: ${{ github.event.pull_request.number }} + " pull request merged"
-          merge_method: merge
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr_number=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+          echo "Merging pull request $pr_number"
+          gh pr merge $pr_number --auto --merge
