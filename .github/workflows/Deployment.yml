@@ -20,6 +20,7 @@ jobs:
           echo "Workflow Conclusion: ${{ github.event.workflow_run.conclusion }}"
           echo "Modified Files: ${{ github.event.head_commit.modified }}"
           echo "Workflow: ${{ github.workflow }}"
+          echo "Triggered Workflow: ${{ github.event.workflow }}"
           echo "Actor: ${{ github.actor }}"
           echo "Commit SHA: ${{ github.sha }}"
           echo "Event Name: ${{github.event.workflow_run.event}}" 
@@ -27,7 +28,7 @@ jobs:
 
   get_version_and_release:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow, 'Continuous Integration')
+    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow, 'Continuous Integration')
     
     steps:         
       - name: Checkout code
