@@ -61,12 +61,7 @@ jobs:
           status -        `${{ job.status }}`
           assignees: `${{ github.actor }}`
 
-  # Showcase Test Results
-  Test_Results:
-    name: Save Test Results
-    needs: Testing
-    runs-on: ubuntu-latest
-    steps:
+    # Create testcase directory and move test results in new directory
     - name: Create Test Results Folder
       run: |
         mkdir testresults
@@ -76,12 +71,20 @@ jobs:
           echo "report.xml not found in testcase directory."
           exit 1 #Exit with an error code
         fi
-
+    
+    # Upload test results into as artifact
     - name: Upload Test Results
       uses: actions/upload-artifact@v2
       with: 
         name: testResults
         path: testresults
+
+  # Showcase Test Results
+  Test_Results:
+    name: Save Test Results
+    needs: Testing
+    runs-on: ubuntu-latest
+    steps:
     
     - name: Download Remote Test Results
       uses: actions/download-artifact@v2
