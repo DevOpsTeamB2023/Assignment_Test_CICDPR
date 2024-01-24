@@ -26,7 +26,7 @@ jobs:
   create_issue:
     needs: get_version
     runs-on: ubuntu-latest
-    if: ${{!$version_number}}
+    if: ${{!version_number}}
     steps:
       - name: create issue for empty version number
         uses: dacbd/create-issue-action@main
