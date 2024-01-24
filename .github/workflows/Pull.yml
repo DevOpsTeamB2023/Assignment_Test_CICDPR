@@ -60,6 +60,7 @@ jobs:
         uses: actions/get-status-checks@v8
         with:
           repository: 'DevOpsTeamB2023/Assignment_Test_CICDPR'
+          token: ${{ secrets.GITHUB_TOKEN }}
           ref: ${{ github.sha }}
           
       - name: Check For Successful Builds
