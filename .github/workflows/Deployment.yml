@@ -2,7 +2,7 @@ name: Test Deployment
 on:
   push:
     paths:
-      - 'sourcecode/**'
+      - 'sourcecode/'
   workflow_run:
     workflows:
       - "Continuous Integration"
@@ -50,6 +50,7 @@ jobs:
         run: echo "RELEASE_VERSION=${{ steps.get_version.outputs.version_number }}" >> $GITHUB_ENV
   
       - name: Create a release
+        if: ${{ steps.get_version.outputs.version_number != '' }}
         id: create-new-release
         uses: actions/create-release@v1
         env:
