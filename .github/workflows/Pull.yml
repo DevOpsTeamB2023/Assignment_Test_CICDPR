@@ -70,6 +70,9 @@ jobs:
           fi
 
       - uses: actions/checkout@v4
+        with:
+          repository: 'DevOpsTeamB2023/Assignment_Test_CICDPR'
+          
       - name: Auto Merge Pull Request
         uses: "pascalgn/automerge-action@v0.16.2"
         env:
