@@ -11,13 +11,8 @@ on:
 
 jobs:
 
-  get_version_and_release:
+  logging:
     runs-on: ubuntu-latest
-    if: |
-      github.event_name == 'push' &&
-      success() &&
-      startsWith(github.event.head_commit.modified[0], 'sourcecode/')
-    
     steps:
       - name: Debug - Print Event and Context
         run: |
@@ -27,7 +22,15 @@ jobs:
           echo "Workflow: ${{ github.event.workflow }}"
           echo "Actor: ${{ github.actor }}"
           echo "Commit SHA: ${{ github.sha }}"
-          
+
+  get_version_and_release:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'push' &&
+      success() &&
+      startsWith(github.event.head_commit.modified[0], 'sourcecode/')
+    
+    steps:         
       - name: Checkout code
         uses: actions/checkout@v2
 
