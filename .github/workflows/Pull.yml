@@ -71,7 +71,7 @@ jobs:
 
       - uses: actions/checkout@v4
       - name: Auto Merge Pull Request
-        uses: "pascalgn/automerge-action@v3"
+        uses: "pascalgn/automerge-action@v0.16.2"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
