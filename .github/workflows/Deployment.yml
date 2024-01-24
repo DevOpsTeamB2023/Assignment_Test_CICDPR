@@ -23,21 +23,24 @@ jobs:
           
           # Debugging: Print version number
           echo "Version Number: '$version_number'"
-          # create an issue for a member to release the code
-          if [ -z "$version_number" ]; then
-            echo "in if statement"
-            # Create an issue
-            issue_title="Unable to determine version number"
-            issue_body="Please create a valid version tag and release. Assigning to @${{ github.actor }}."
-            issue_assignee="${{ github.actor }}"
-            
-            echo "create_issue=true" >> $GITHUB_ENV
-            echo "issue_title=${issue_title}" >> $GITHUB_ENV
-            echo "issue_body=${issue_body}" >> $GITHUB_ENV
-            echo "issue_assignee=${issue_assignee}" >> $GITHUB_ENV
-          fi
-          
-          echo "version_number=${version_number}" >> $GITHUB_ENV
+  create_issue:
+    needs: get_version
+    runs-on: ubuntu-latest
+    if: ${{!$version_number}}
+    steps:
+      - name: create issue for empty version number
+        uses: dacbd/create-issue-action@main
+        with:
+          token: ${{ github.token }}
+          title: Action workflow Workflow name - `${{ github.workflow }}` failed.
+          body: |
+            ### Context
+            [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            [Codebase](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
+            Workflow name - `${{ github.workflow }}`
+            Job -           `${{ github.job }}`
+            status -        `${{ job.status }}`
+            assignees: `${{ github.actor }}`
         
   git_release:
     needs: get_version
