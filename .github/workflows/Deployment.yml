@@ -19,7 +19,7 @@ jobs:
           echo "Triggered Workflow: ${{ github.event.workflow_run.name }}"
           echo "Event Name: ${{github.event.workflow_run.event}}" 
           echo "Workflow_successOrfail: ${{github.event.workflow_run.conclusion}}" 
-          echo "Path Pushed: ${{github.event.workflow_run.event.paths}}" 
+          echo "Path Pushed: ${{toJson(github.event.workflow_run.event.paths)}}" 
 
   get_version_and_release:
     runs-on: ubuntu-latest
