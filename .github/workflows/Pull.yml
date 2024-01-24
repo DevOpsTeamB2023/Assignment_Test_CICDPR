@@ -69,7 +69,7 @@ jobs:
             echo "Checks have not all passed. Merge cannot be performed."
           fi
 
-      - uses: actions/checkout@4
+      - uses: actions/checkout@v4
       - name: Auto Merge Pull Request
         uses: "pascalgn/automerge-action@v3"
         env:
