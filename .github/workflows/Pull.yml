@@ -62,6 +62,17 @@ jobs:
         with:
           ref: ${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: String Pull Request Title for Label
+        run: echo "AUTOMERGE_TITLE=$(echo "${{ github.event.issue.title }}" | sed 's/[^a-zA-Z0-9_-]/_/g')" >> $GITHUB_ENV
+
+      #Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
+      - uses: actions/checkout@v4
+      - name: Label Pull Request as automerge
+        uses: actions/labeler@v4
+        with: 
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          labels: 'automerge, ${{ env.AUTOMERGE_TITLE }}'
 
       - uses: actions/checkout@v4
       - name: Auto Merge Pull Request
