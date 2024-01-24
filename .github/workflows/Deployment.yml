@@ -28,11 +28,11 @@ jobs:
           echo "::set-output name=version_number::${version_number}"
 
       - name: Log version number
-        run: echo "Version Number:${{ version_number }}"
+        run: echo "Version Number:${{ $version_number }}"
         if: ${{ version_number == '' }}
 
       - name: Create issue for empty version number
-        if: ${{ version_number == '' }}
+        if: ${{ $version_number == '' }}
         uses: dacbd/create-issue-action@main
         with:
           token: ${{ github.token }}
