@@ -1,6 +1,7 @@
 name: Test Deployment  
 on:
   push:
+    branches: [main]
     paths:
       - 'sourcecode/*.py'
   workflow_run:
@@ -23,7 +24,8 @@ jobs:
 
   get_version_and_release:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'test' && github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.name, 'Continuous Integration')
+    # need check path but idk how check :)
+    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success' && startsWith(github.event.workflow_run.name, 'Continuous Integration')
     
     steps:         
       - name: Checkout code
