@@ -65,7 +65,7 @@ jobs:
           
       - name: Check For Successful Builds
         run: |
-          status =$(echo "${{ steps.get-status.outputs.get_status }}" | jq 'map(select(.status == "success")) )
+          status = $(echo "${{ steps.get-status.outputs.get_status }}" | jq 'map(select(.status == "success")) )
           if [ "$status" == "success" ]; then
             # Proceed with the merge if checks are successful
           else
