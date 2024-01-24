@@ -57,24 +57,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Get Check Status
-        id: get_status
-        uses: danieldeichfuss/get-status@v0.0.10
+        id: get-status
+        uses: danieldeichfuss/get-status@v0
         with:
           ref: ${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Check For Successful Builds
-        run: |
-          status = $(echo "${{ steps.get-status.outputs.get_status }}" | jq 'map(select(.status == "success"))' )
-          if [[ "$status" == *"success"* ]]; then
-            # Proceed with the merge if checks are successful
-          else
-            echo "Checks have not all passed. Merge cannot be performed."
-            exit 1
-          fi
 
       - uses: actions/checkout@v4
       - name: Auto Merge Pull Request
+        if: ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }}
         uses: "pascalgn/automerge-action@v0.16.2"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
