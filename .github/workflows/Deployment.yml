@@ -2,7 +2,7 @@ name: Test Deployment
 on:
   push:
     paths:
-      - 'sourcecode/'
+      - 'sourcecode/*.py'
   workflow_run:
     workflows:
       - "Continuous Integration"
