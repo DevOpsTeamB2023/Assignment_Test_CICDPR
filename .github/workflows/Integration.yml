@@ -10,12 +10,18 @@ jobs:
   Build_SetUp:
     name: Build SetUp
     uses: ./.github/workflows/BuildingSetUp.yml
+    
 
   Testing:
     name: Run Test Cases
     needs: Build_SetUp
     runs-on: ubuntu-latest
     steps:
+    # Run installation of pytest in Testing
+    - name: Check PyTest Installation
+      if: ${{ ! needs.Build_SetUp.outputs.pytest_installed }}
+      run: pip install pytest
+      
     - name: Checkout Codes
       uses: actions/checkout@v4
       with:
@@ -54,7 +60,7 @@ jobs:
         mkdir testresults
         mv testcase/report.xml ./testresults
         # mv report.xml ./testresults
-        
+
     - name: Upload Test Results
       uses: actions/upload-artifact@v2
       with: 
