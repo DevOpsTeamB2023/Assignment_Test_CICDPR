@@ -65,7 +65,7 @@ jobs:
     - name: Create Test Results Folder
       run: |
         mkdir testresults
-        if [[ -f testcase/repost.xml ]]; then    #Check if report exists
+        if [[ -f testcase/report.xml ]]; then    #Check if report exists
           mv testcase/report.xml ./testresults
         else
           echo "report.xml not found in testcase directory."
