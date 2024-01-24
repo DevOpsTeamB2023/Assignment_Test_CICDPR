@@ -23,7 +23,6 @@ jobs:
           
           # Debugging: Print version number
           echo "Version Number: $version_number"
-
           # create an issue for a member to release the code
           if [ -z "$version_number" ]; then
             # Create an issue
@@ -31,13 +30,13 @@ jobs:
             issue_body="Please create a valid version tag and release. Assigning to @${{ github.actor }}."
             issue_assignee="${{ github.actor }}"
             
-            echo "::set-output name=create_issue::true"
-            echo "::set-output name=issue_title::${issue_title}"
-            echo "::set-output name=issue_body::${issue_body}"
-            echo "::set-output name=issue_assignee::${issue_assignee}"
+            echo "create_issue=true" >> $GITHUB_ENV
+            echo "issue_title=${issue_title}" >> $GITHUB_ENV
+            echo "issue_body=${issue_body}" >> $GITHUB_ENV
+            echo "issue_assignee=${issue_assignee}" >> $GITHUB_ENV
           fi
           
-          echo "::set-output name=version_number::${version_number}"
+          echo "version_number=${version_number}" >> $GITHUB_ENV
         
   git_release:
     needs: get_version
