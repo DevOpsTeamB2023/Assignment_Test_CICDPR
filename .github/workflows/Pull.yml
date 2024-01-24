@@ -55,9 +55,9 @@ jobs:
     needs: Response_Review
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@4
       - name: Get Check Status
-        uses: actions/get-status-checks@8
+      - uses: actions/checkout@v4
+      - uses: actions/get-status-checks@v8
         with:
           ref: ${{ github.sha }}
       - name: Check For Successful Builds
@@ -69,8 +69,9 @@ jobs:
             echo "Checks have not all passed. Merge cannot be performed."
           fi
 
+      - uses: actions/checkout@4
       - name: Auto Merge Pull Request
-        uses: "pascalgn/automerge-action@0.16.2"
+        uses: "pascalgn/automerge-action@v3"
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
