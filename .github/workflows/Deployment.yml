@@ -47,7 +47,7 @@ jobs:
     needs: get_version
     name: Release to Git for Deployment
     runs-on: ubuntu-latest
-    if: ${{ needs.get_version.outputs.version_number != '' }}
+    if: ${{ steps.get_version.outputs.version_number != '' }}
 
     steps:
       - name: Set environment version
