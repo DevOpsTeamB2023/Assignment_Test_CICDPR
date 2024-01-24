@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: get the version number from commit message and create issue if no version number
+      - name: Get version number and create issue if no version number
         id: get_version
         run: |
           # Extract version number from the commit message eg. v1.0.0: added feature 2.0
@@ -26,25 +26,22 @@ jobs:
 
           # Set the version_number as an output
           echo "::set-output name=version_number::${version_number}"
-  create_issue:
-    needs: get_version
-    runs-on: ubuntu-latest
-    if: ${{ needs.get_version.outputs.version_number == '' }}
-    steps:
+
       - name: Log version number
         run: echo "Version Number:${{ needs.get_version.outputs.version_number }}"
-      - name: create issue for empty version number
+        if: ${{ needs.get_version.outputs.version_number == '' }}
+
+      - name: Create issue for empty version number
+        if: ${{ needs.get_version.outputs.version_number == '' }}
         uses: dacbd/create-issue-action@main
         with:
           token: ${{ github.token }}
-          title: Action workflow Workflow name - `${{ github.workflow }}` failed.
+          title: No Version Number in Commit Message - `${{ github.workflow }}` failed.
           body: |
             ### Context
             [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
             [Codebase](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
             Workflow name - `${{ github.workflow }}`
-            Job -           `${{ github.job }}`
-            status -        `${{ job.status }}`
             assignees: `${{ github.actor }}`
         
   git_release:
