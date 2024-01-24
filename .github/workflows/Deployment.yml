@@ -47,19 +47,22 @@ jobs:
     needs: get_version
     name: Release to Git for Deployment
     runs-on: ubuntu-latest
-    if: ${{ steps.get_version.outputs.version_number != '' }}
+    # if: ${{ needs.get_version.outputs.version_number != '' }}
 
     steps:
-      - name: Set environment version
-        run: echo "RELEASE_VERSION=${{ needs.get_version.outputs.version_number }}" >> $GITHUB_ENV
+      - name: Log version number
+        run: echo "Version Number:${{ needs.get_version.outputs.version_number }}"
+        
+      # - name: Set environment version
+      #   run: echo "RELEASE_VERSION=${{ needs.get_version.outputs.version_number }}" >> $GITHUB_ENV
   
-      - name: Create a release
-        id: create-new-release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        with:
-          tag_name: v${{ env.RELEASE_VERSION }}
-          release_name: Release v${{ env.RELEASE_VERSION }}
-          body: |
-            Release notes for v${{ env.RELEASE_VERSION }}.
+      # - name: Create a release
+      #   id: create-new-release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      #   with:
+      #     tag_name: v${{ env.RELEASE_VERSION }}
+      #     release_name: Release v${{ env.RELEASE_VERSION }}
+      #     body: |
+      #       Release notes for v${{ env.RELEASE_VERSION }}.
