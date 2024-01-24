@@ -66,13 +66,11 @@ jobs:
       #Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
       - uses: actions/checkout@v4
       - name: Label Pull Request as automerge
-        uses: actions/github-script@v6
+        uses: actions/labeler@v4
         with:
-          script: |
-            github.issues.addLabels({
-              issue_number: context.issue.number,
-              labels: ['automerge']
-            })
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          labels: automerge
+          pr-number: ${{ github.event.pull_request.number }}
 
       - uses: actions/checkout@v4
       - name: Auto Merge Pull Request
