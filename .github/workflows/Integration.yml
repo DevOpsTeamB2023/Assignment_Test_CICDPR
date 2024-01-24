@@ -1,6 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
+#Trigger when there is a push to main
 name: Continuous Integration
 
 on:
@@ -13,27 +11,29 @@ on:
       - main
     
 jobs:
+  # Set up necessary installs
   Build_SetUp:
     name: Build SetUp
     uses: ./.github/workflows/BuildingSetUp.yml
-    
 
+  # Reference to Test Cases in repository
   Testing:
     name: Run Test Cases
     needs: Build_SetUp
     runs-on: ubuntu-latest
     steps:
-    # Run installation of pytest in Testing
+    # Run installation of pytest in Testing from BuildingSetUp.yml
     - name: Check PyTest Installation
       if: ${{ ! needs.Build_SetUp.outputs.pytest_installed }}
       run: pip install pytest pytest-cov
-      
+
+    # Retrieving from set Repository
     - name: Checkout Codes
       uses: actions/checkout@v4
       with:
         repository: DevOpsTeamB2023/Assignment_Test_CICDPR
 
-    # Retrieve Test Cases
+    # Retrieve Test Cases from set Repository
     - name: Use Test Cases
       if: always()
       run: |
@@ -56,6 +56,7 @@ jobs:
           status -        `${{ job.status }}`
           assignees: `${{ github.actor }}`
 
+  # Showcase Test Results
   Test_Results:
     name: Save Test Results
     needs: Testing
