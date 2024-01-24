@@ -69,12 +69,10 @@ jobs:
       # Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
       - uses: actions/checkout@v3
       - name: Label Pull Request as automerge
-        if: ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }}
-        uses: octokit/request-action@v2.1.9
+        uses: actions-ecosystem/action-add-labels@v1
+        if: ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }} && ${{ startsWith(github.event.comment.body, '/add-labels') }}
         with:
-          route: POST /repos/${{ github.repository }}/issues/${{ github.event.number }}/labels
-          token: ${{ secrets.GITHUB_TOKEN }}
-          body: automerge
+          labels: automerge
 
       # Merge Pull Request action 
       - uses: actions/checkout@v4
