@@ -56,13 +56,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          repository: 'DevOpsTeamB2023/Assignment_Test_CICDPR'
-          
       - name: Get Check Status
         uses: actions/get-status-checks@v8
         with:
+          repository: 'DevOpsTeamB2023/Assignment_Test_CICDPR'
           ref: ${{ github.sha }}
+          
       - name: Check For Successful Builds
         run: |
           successful_checks=$(echo "${{ steps.get-status-checks.outputs.checks }}" | jq 'map(select(.state == "success")) | length')
