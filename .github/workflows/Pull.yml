@@ -56,6 +56,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          repository: 'DevOpsTeamB2023/Assignment_Test_CICDPR'
+          
       - name: Get Check Status
         uses: actions/get-status-checks@v8
         with:
@@ -70,9 +73,6 @@ jobs:
           fi
 
       - uses: actions/checkout@v4
-        with:
-          repository: 'DevOpsTeamB2023/Assignment_Test_CICDPR'
-          
       - name: Auto Merge Pull Request
         uses: "pascalgn/automerge-action@v0.16.2"
         env:
