@@ -4,6 +4,10 @@
 name: Continuous Integration
 
 on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
   push:
     branches:
       - main
