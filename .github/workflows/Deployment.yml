@@ -25,6 +25,7 @@ jobs:
           echo "Version Number: '$version_number'"
           # create an issue for a member to release the code
           if [ -z "$version_number" ]; then
+            echo "in if statement"
             # Create an issue
             issue_title="Unable to determine version number"
             issue_body="Please create a valid version tag and release. Assigning to @${{ github.actor }}."
