@@ -27,14 +27,14 @@ jobs:
           else
             REVIEWERS="koayyiting"
           fi
-          echo "::set-ouput name=reviewers::$REVIEWERS"
+          echo "::set-output name=reviewers::$REVIEWERS"
 
       # Add Reviewer to Pull Request
       - name: Add Reviewers
         uses: madrapps/add-reviewers@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          reviewers: '${{ steps.toadd_reviewers.outputs.reviewers }}'
+          reviewers: ${{ steps.toadd_reviewers.outputs.reviewers }}
           re-request-when-changes-requested: true
 
   Response_Review:
