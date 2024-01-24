@@ -23,10 +23,13 @@ jobs:
           
           # Debugging: Print version number
           echo "Version Number: '$version_number'"
+
+          # Set the version_number in the environment
+          echo "version_number=${version_number}" >> $GITHUB_ENV
   create_issue:
     needs: get_version
     runs-on: ubuntu-latest
-    if: ${{!version_number}}
+    if: ${{ env.version_number == '' }}
     steps:
       - name: create issue for empty version number
         uses: dacbd/create-issue-action@main
