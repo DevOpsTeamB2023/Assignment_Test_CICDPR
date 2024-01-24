@@ -67,7 +67,7 @@ jobs:
       - name: Check For Successful Builds
         run: |
           status =$(echo "${{ steps.get-status.outputs.get_status }}" | jq 'map(select(.status == "success")) )
-          if [ "$status" == "${{ github.event.pull_request.commits }}" ]; then
+          if [ "$status" == "success" ]; then
             # Proceed with the merge if checks are successful
           else
             echo "Checks have not all passed. Merge cannot be performed."
