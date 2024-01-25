@@ -59,6 +59,7 @@ jobs:
           Job -           `${{ github.job }}`
           status -        `${{ job.status }}`
           assignees: `${{ github.actor }}`
+        assignees: ${{ github.actor }}
 
     # Create testcase directory and move test results in new directory
     - name: Create Test Results Folder
