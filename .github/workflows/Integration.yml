@@ -51,9 +51,8 @@ jobs:
       uses: dacbd/create-issue-action@main
       with:
         token: ${{ github.token }}
-        title: Action workflow Workflow name - `${{ github.workflow }}` failed.
+        title: Issue - `${{ github.workflow }}` failed.
         body: |
-          ### Context
           [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           [Codebase](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
           Workflow name - `${{ github.workflow }}`
