@@ -40,12 +40,7 @@ jobs:
         cd $GITHUB_WORKSPACE/testcase
         pytest -v --cov=../sourcecode --junitxml=report.xml
 
-    - name: Display testcase directory and content
-      run: |
-        ls -la testcase           # List contents of testcase directory
-        cat testcase/report.xml   # Print contents of report.xml
-
-    # Fail Test, Create Issue
+    # Create Issue for Failed Workflow
     - if: ${{ failure() }}
       name: Create Issue on Failed workflow
       uses: dacbd/create-issue-action@main
@@ -59,7 +54,13 @@ jobs:
           Job -           `${{ github.job }}`
           status -        `${{ job.status }}`
           assignees: `${{ github.actor }}`
-        assignees: ${{ github.actor }}
+        assignees: lacsadoshaniahsantiago, koayyiting
+
+    # [Edit] Check testcase directory
+    - name: Display testcase directory and content
+      run: |
+        ls -la testcase           # List contents of testcase directory
+        cat testcase/report.xml   # Print contents of report.xml
 
     # Create testcase directory and move test results in new directory
     - name: Create Test Results Folder
@@ -79,13 +80,38 @@ jobs:
         name: testResults
         path: testresults
 
+  # Create Issue for Failing Test Results
+  Test_Fail:
+    name: Test Results Fail
+    needs: Testing
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Test Results
+        run: |
+          FAILED_TESTS=$(jq '.testsuite.testcase[] | select(.failure != null) | .name' report.xml)
+          if [[ -n "$FAILED_TESTS" ]]; then
+            echo "Failed tests found: $FAILED_TESTS"
+            exit 1  # Signal failure
+          else
+            echo "All tests passed."
+          fi
+
+      - name: Create Issue on Test Failure
+        if: ${{ failure() }}  # Only runs if the "Check Test Results" step failed
+        uses: dacbd/create-issue-action@main
+        with:
+          token: ${{ github.token }}
+          title: "Tests Failed in ${{ github.workflow }} "
+          body: |
+            **Commit:** ${{ github.sha }}
+            **Report:** [report.xml](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs/${{ github.job }}/artifacts/report.xml)
+
   # Showcase Test Results
   Test_Results:
     name: Save Test Results
     needs: Testing
     runs-on: ubuntu-latest
     steps:
-    
     - name: Download Remote Test Results
       uses: actions/download-artifact@v2
       with:
