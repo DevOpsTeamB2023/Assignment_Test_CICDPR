@@ -52,6 +52,10 @@ jobs:
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
+
+      - name: Check Reviews
+        run: |
+          echo "Approved Reviews: $APPROVED_REVIEWS"
   
   # Create Issue for Review Request for Changes
   Issue_Request:
@@ -87,9 +91,9 @@ jobs:
           assignees: ${{ github.event.pull_request.user.login }}
 
   Merge_Request:
-    name: Merge Request
+    name: Approved
     needs: Response_Review
-    if: ${{ github.event.review.state != 'changes_requested' }} && ${{ needs.Response_Review.outputs.approved_reviews }} >= 1 && ${{ !success() }}
+    if: ${{ needs.Response_Review.outputs.approved_reviews }} >= 1 
     runs-on: ubuntu-latest
     steps:
       # Retrieve Pull Request status of checks
