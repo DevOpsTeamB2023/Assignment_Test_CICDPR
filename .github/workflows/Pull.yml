@@ -76,15 +76,31 @@ jobs:
     if: ${{ github.event.review.state == 'changes_requested' }}
     runs-on: ubuntu-latest
     steps:
+      - name: Get Changed Files
+        run: |
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
+          echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
+
+      - name: Format List of Changed Files
+        run: |
+          NESTED_LIST=$(IFS=$'\n'; for f in $CHANGED_FILES; do echo -e "- `dirname $f`:\n  - $f"; done)
+          echo "NESTED_LIST=$NESTED_LIST" >> $GITHUB_ENV
+          
       - uses: dacbd/create-issue-action@main
         with:
           token: ${{ github.token }}
           title: "[REQUEST CHANGES] PR#${{ github.event.pull_request.number }} "
           body: |
-            [Code Source](https://github.com/${{ github.repository }}/tree/${{ github.event.pull_request.head.ref }}/${{ github.sha }})
+            **Files Changed :**
+
+            ${{ env.NESTED_LIST }}_
+            
+            [View Code on GitHub](https://github.com/${{ github.repository }}/tree/${{ github.event.pull_request.head.ref }})
+            
             Comment - 
-            ${{ needs.get_review_comment.outputs.review_comment }}
-          assignees: ${{ github.event.pull.request.user.login }}
+            ${{ step.get_review_comment.outputs.review_comment }}
+          
+          assignees: ${{ github.event.pull_request.user.login }}
 
   Merge_Request:
     needs: Response_Review
@@ -115,7 +131,7 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          required_labels: automerge
-          merge_commit_message: "${{ github.event.pull_request.number }} - Merged PR#${{ github.event.pull_request.number }} "
-          title: ${{ github.event.pull_request.number }} + " pull request merged"
+          # required_labels: automerge
+          # merge_commit_message: "${{ github.event.pull_request.number }} - Merged PR#${{ github.event.pull_request.number }} "
+          # title: ${{ github.event.pull_request.number }} + " pull request merged"
           merge_method: merge
