@@ -10,7 +10,7 @@ on:
 jobs:
   Requests_Build:
     uses: ./.github/workflows/BuildingSetUp.yml # Reusable workflow
-
+    
   Requests_AddReviewer:
     name: Adding Reviewer
     needs: Requests_Build
@@ -38,11 +38,11 @@ jobs:
           re-request-when-changes-requested: true
 
   Response_Review:
-    name: Approve Review and Merge
+    name: Review
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
     steps:
-    # Retrieve Reviews approved
+      # Retrieve Reviews approved
       - name: Get Review Status
         id: get_reviews
         run: |
@@ -52,17 +52,52 @@ jobs:
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
-
-  Merge_Request:
-    if: ${{ needs.Response_Review.outputs.approved_reviews }} >= 1
+  
+  # Create Issue for Review Request for Changes
+  Issue_Request:
+    name: Request for Changes
     needs: Response_Review
+    if: ${{ github.event.review.state == 'changes_requested' }}
     runs-on: ubuntu-latest
     steps:
-    # Retrieve Pull Request status of checks
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+  
+      - name: Get Changed Files
+        id: changed-markdown-files
+        uses: tj-actions/changed-files@v42
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-markdown-files.outputs.all_changed_files }}
+
+      - name: Create Issue for Failed Test
+        uses: dacbd/create-issue-action@main
+        with:
+          token: ${{ github.token }}
+          title: "[REQUEST CHANGES] PR#${{ github.event.pull_request.number }} "
+          body: |
+            **Files Changed -**
+
+            [${{ steps.changed-markdown-files.outputs.all_changed_files }}](https://github.com/${{ github.repository }}/tree/${{ github.event.pull_request.head.ref }}/${{ steps.changed-markdown-files.outputs.all_changed_files }})
+            
+            [View Code on GitHub](https://github.com/${{ github.repository }}/tree/${{ github.event.pull_request.head.ref }})
+            
+            **Comment -**
+            ${{ github.event.review.body }}
+          assignees: ${{ github.event.pull_request.user.login }}
+
+  Merge_Request:
+    name: Merge Request
+    needs: Response_Review
+    if: ${{ !success() }} && ${{ needs.Response_Review.outputs.approved_reviews }} >= 1
+    runs-on: ubuntu-latest
+    steps:
+      # Retrieve Pull Request status of checks
+      - uses: actions/checkout@v4
+      
       - name: Get Check Status
-        id: get-status
         uses: danieldeichfuss/get-status@v0.0.10
+        id: get-status
         with:
           ref: ${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -70,8 +105,8 @@ jobs:
       # Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
       - uses: actions/checkout@v3
       - name: Label Pull Request as automerge
-        uses: actions-ecosystem/action-add-labels@v1
         if: ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }} && ${{ startsWith(github.event.comment.body, '/add-labels') }}
+        uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: automerge
 
@@ -82,6 +117,5 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          required_labels: automerge
-          title: ${{ github.event.pull_request.number }} + " pull request merged"
+          merge_commit_message: "${{ github.event.pull_request.number }} - Merged PR#${{ github.event.pull_request.number }} "
           merge_method: merge
