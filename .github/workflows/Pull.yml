@@ -10,7 +10,7 @@ on:
 jobs:
   Requests_Build:
     uses: ./.github/workflows/BuildingSetUp.yml # Reusable workflow
-
+    
   Requests_AddReviewer:
     name: Adding Reviewer
     needs: Requests_Build
@@ -38,11 +38,11 @@ jobs:
           re-request-when-changes-requested: true
 
   Response_Review:
-    name: Approve Review and Merge
+    name: Review and Merge
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
     steps:
-    # Retrieve Reviews approved
+      # Retrieve Reviews approved
       - name: Get Review Status
         id: get_reviews
         run: |
@@ -52,6 +52,15 @@ jobs:
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
+
+      # Create Issue for Review Request for Changes
+      - name: Review Request for Changes
+        if: ${{ github.event.review.state == 'changes_requested' }}
+        uses: dacbd/create-issue-action@main
+        with:
+          token: ${{ github.token }}
+          title: "[REQUEST CHANGES] PR#${{ github.event.pull_request.number }}"
+          assignees: ${{ github.actor }}
 
   Merge_Request:
     if: ${{ needs.Response_Review.outputs.approved_reviews }} >= 1
