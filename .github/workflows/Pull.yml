@@ -53,24 +53,20 @@ jobs:
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
 
-
-      - name: Get Pull Request Review Message
-        id: get_review_message
-        uses: actions/github-script@v6
+      # Retreive Review Comment
+      - uses: actions/checkout@v3
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            import * as core from '@actions/core';
-            import * as github from '@actions/github';
-
-            const pull_number = context.payload.pull_request.number;
-            const reviews = await github.rest.pulls.listReviews({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number,
-            });
-            const [latestReview] = reviews.data;
-            core.setOutput('review_message', latestReview.body);
+          ref: ${{ github.sha }}
+          
+      - name: Get Pull Request Review Message
+        id: get_review_comment
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          REVIEWS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
+            
+          REVIEW_COMMENT=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .comments[-1].body')
+          echo "::set-output name=review_comment::$REVIEW_COMMENT"
   
   # Create Issue for Review Request for Changes
   Issue_Request:
@@ -86,7 +82,7 @@ jobs:
           body: |
             [Code Source](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
             Comment - 
-            `${{ steps.get_review_message.outputs.review_message }}`
+            `${{ steps.get_review_comment.outputs.review_comment }}`
           assignees: ${{ github.actor }}
 
   Merge_Request:
