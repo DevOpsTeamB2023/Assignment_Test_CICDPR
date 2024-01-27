@@ -86,6 +86,11 @@ jobs:
     needs: Testing
     runs-on: ubuntu-latest
     steps:
+      - name: Download Remote Test Results
+        uses: actions/download-artifact@v2
+        with:
+          name: testResults
+          
       - name: Check Test Results
         run: |
           FAILED_TESTS=$(jq '.testsuite.testcase[] | select(.failure != null) | .name' report.xml)
