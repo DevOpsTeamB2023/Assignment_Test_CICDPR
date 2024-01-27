@@ -27,13 +27,13 @@ jobs:
       if: ${{ ! needs.Build_SetUp.outputs.pytest_installed }}
       run: pip install pytest pytest-cov
 
-    # Retrieving from set Repository
+    # [Edit] Retrieving from set Repository
     - name: Checkout Codes
       uses: actions/checkout@v4
       with:
         repository: DevOpsTeamB2023/Assignment_Test_CICDPR
 
-    # Retrieve Test Cases from set Repository
+    # [Edit] Retrieve Test Cases from Test folder and Code from Source Code folder
     - name: Use Test Cases
       if: always()
       run: |
