@@ -60,8 +60,11 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
+            import * as core from '@actions/core';
+            import * as github from '@actions/github';
+
             const pull_number = context.payload.pull_request.number;
-            const reviews = await github.rest.pulls.listReviewsForPullRequest({
+            const reviews = await github.rest.pulls.listReviews({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number,
