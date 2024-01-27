@@ -52,18 +52,6 @@ jobs:
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
-
-      # Retreive Review Comment
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.sha }}
-          
-      - name: Get Pull Request Review Message
-        id: get_review_comment
-        run: |
-          REVIEW_COMMENT=$(echo "${{ github.event.pull_request_review.body }}" )
-          echo "Review: $REVIEW_COMMENT"
-          echo "::set-output name=review_comment::$REVIEW_COMMENT"
   
   # Create Issue for Review Request for Changes
   Issue_Request:
