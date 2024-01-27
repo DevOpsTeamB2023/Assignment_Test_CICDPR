@@ -95,7 +95,7 @@ jobs:
       - name: Check for Failed Tests
         run: |
           # Assuming a JUnit XML report format
-          failed_tests=$(grep 'failure' testresults/report.xml | wc -l)
+          failed_tests=$(grep 'failure' testsresults/report.xml | wc -l)
           if [[ $failed_tests -gt 0 ]]; then
             echo "Failed tests detected!"
             exit 1  # Exit with an error code to trigger issue creation
