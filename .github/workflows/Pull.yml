@@ -46,7 +46,12 @@ jobs:
       - name: Get Review Status
         id: get_reviews
         run: |
-          APPROVED_REVIEWS=$(echo "${{ github.event.pull_request_review.body }}
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          REVIEWS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
+
+          APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
+          APPROVED_REVIEWS=
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
 
       # Retreive Review Comment
@@ -57,11 +62,7 @@ jobs:
       - name: Get Pull Request Review Message
         id: get_review_comment
         run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          REVIEWS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
-            
-          REVIEW_COMMENT=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "CHANGES_REQUESTED") | .comments[-1].body')
+          REVIEW_COMMENT=$(echo "${{ github.event.pull_request_review.body }}" )
           echo "Review: $REVIEW_COMMENT"
           echo "::set-output name=review_comment::$REVIEW_COMMENT"
   
