@@ -94,7 +94,7 @@ jobs:
 
       - name: Check Contents
         run: |
-          cat testresults/report.xml
+          cat testresults
           
       - name: Check Test Results
         run: |
