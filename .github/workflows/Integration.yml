@@ -91,10 +91,13 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: testResults
+
+      - name: Check Contents
+        run: |
+          cat testresults/report.xml
           
       - name: Check Test Results
         run: |
-          cat testresults/report.xml
           FAILED_TESTS=$(jq '.testsuite.testcase[] | select(.failure != null) | report.xml)
           if [[ -n "$FAILED_TESTS" ]]; then
             echo "Failed tests found: $FAILED_TESTS"
