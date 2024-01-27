@@ -90,16 +90,15 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: testResults
+          path: testsresults
           
-      - name: Check Test Results
+      - name: Check for Failed Tests
         run: |
-          sudo apt-get install jq -y
-          FAILED_TESTS=$(jq '.testsuite.testcase[] | select(.failure != null) | .name' testresults/report.xml)
-          if [[ -n "$FAILED_TESTS" ]]; then
-            echo "Failed tests found: $FAILED_TESTS"
-            exit 1  # Signal failure
-          else
-            echo "All tests passed."
+          # Assuming a JUnit XML report format
+          failed_tests=$(grep 'failure' testresults/report.xml | wc -l)
+          if [[ $failed_tests -gt 0 ]]; then
+            echo "Failed tests detected!"
+            exit 1  # Exit with an error code to trigger issue creation
           fi
 
       - name: Create Issue on Test Failure
@@ -109,9 +108,14 @@ jobs:
           token: ${{ github.token }}
           title: "Tests Failed in ${{ github.workflow }} "
           body: |
-            **Commit:** ${{ github.sha }}
-            **Report:** [report.xml](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs/${{ github.job }}/artifacts/report.xml)
+            **Failed tests have been detected.**
 
+            [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            [Test Results Artifact](https://github.com/${{ github.repository }}/actions/artifacts/${{ github.run_id }}/download?name=testResults)
+
+            **Please investigate and address the failures.**
+          assignees: ${{ github.actor }}
+          
   # Showcase Test Results
   Test_Results:
     name: Save Test Results
