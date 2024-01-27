@@ -98,7 +98,7 @@ jobs:
             [View Code on GitHub](https://github.com/${{ github.repository }}/tree/${{ github.event.pull_request.head.ref }})
             
             Comment - 
-            ${{ step.get_review_comment.outputs.review_comment }}
+            ${{ steps.get_review_comment.outputs.review_comment }}
           
           assignees: ${{ github.event.pull_request.user.login }}
 
