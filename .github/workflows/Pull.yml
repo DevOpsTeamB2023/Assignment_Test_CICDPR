@@ -89,7 +89,7 @@ jobs:
   Merge_Request:
     name: Merge Request
     needs: Response_Review
-    if: ${{ !success() }} && ${{ needs.Response_Review.outputs.approved_reviews }} >= 1
+    if: ${{ github.event.review.state != 'changes_requested' }} && ${{ needs.Response_Review.outputs.approved_reviews }} >= 1 && ${{ !success() }}
     runs-on: ubuntu-latest
     steps:
       # Retrieve Pull Request status of checks
