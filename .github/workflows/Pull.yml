@@ -53,10 +53,30 @@ jobs:
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
 
-      # Create Issue for Review Request for Changes
-      - name: Review Request for Changes
-        if: ${{ github.event.review.state == 'changes_requested' }}
-        uses: dacbd/create-issue-action@main
+
+      - name: Get Pull Request Review Message
+        id: get_review_message
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pull_number = context.payload.pull_request.number;
+            const reviews = await github.rest.pulls.listReviewsForPullRequest({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number,
+            });
+            const [latestReview] = reviews.data;
+            core.setOutput('review_message', latestReview.body);
+  
+  # Create Issue for Review Request for Changes
+  Issue_Request:
+    name: Review Request for Changes
+    needs: Response_Review
+    if: ${{ github.event.review.state == 'changes_requested' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dacbd/create-issue-action@main
         with:
           token: ${{ github.token }}
           title: "[REQUEST CHANGES] PR#${{ github.event.pull_request.number }}"
@@ -67,11 +87,11 @@ jobs:
           assignees: ${{ github.actor }}
 
   Merge_Request:
-    if: ${{ needs.Response_Review.outputs.approved_reviews }} >= 1
+    if: ${{ needs.Response_Review.outputs.approved_reviews }} >= 1 && ${{ github.event.review.state != 'changes_requested' }}
     needs: Response_Review
     runs-on: ubuntu-latest
     steps:
-    # Retrieve Pull Request status of checks
+      # Retrieve Pull Request status of checks
       - uses: actions/checkout@v4
       - name: Get Check Status
         id: get-status
