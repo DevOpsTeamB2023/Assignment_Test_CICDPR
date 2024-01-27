@@ -77,10 +77,10 @@ jobs:
           fetch-depth: 0
   
       - name: Get Changed Files
-        id: changed-files
+        id: changed-markdown-files
         uses: tj-actions/changed-files@v42
         env:
-          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+          ALL_CHANGED_FILES: ${{ steps.changed-markdown-files.outputs.all_changed_files }}
 
       - name: Create Issue for Failed Test
         uses: dacbd/create-issue-action@main
@@ -90,7 +90,7 @@ jobs:
           body: |
             **Files Changed -**
 
-            [${{ steps.changed-files.outputs.all_changed_files }}](https://github.com/${{ github.repository }}/tree/${{ steps.changed-files.outputs.all_changed_files }})
+            [${{ steps.changed-markdown-files.outputs.all_changed_files }}]
             
             [View Code on GitHub](https://github.com/${{ github.repository }}/tree/${{ github.event.pull_request.head.ref }})
             
