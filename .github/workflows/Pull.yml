@@ -85,21 +85,21 @@ jobs:
         uses: tj-actions/changed-files@v42
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
-        
-      - uses: dacbd/create-issue-action@main
+
+      - name: Create Issue for Failed Test
+        uses: dacbd/create-issue-action@main
         with:
           token: ${{ github.token }}
           title: "[REQUEST CHANGES] PR#${{ github.event.pull_request.number }} "
           body: |
-            **Files Changed :**
+            **Files Changed -**
 
-            ${{ steps.changed-files.outputs.all_changed_files }} (https://github.com/${{ github.repository }}/tree/${{ steps.changed-files.outputs.all_changed_files }})
+            [${{ steps.changed-files.outputs.all_changed_files }}](https://github.com/${{ github.repository }}/tree/${{ steps.changed-files.outputs.all_changed_files }})
             
             [View Code on GitHub](https://github.com/${{ github.repository }}/tree/${{ github.event.pull_request.head.ref }})
             
-            Comment - 
+            **Comment -**
             ${{ steps.get_review_comment.outputs.review_comment }}
-          
           assignees: ${{ github.event.pull_request.user.login }}
 
   Merge_Request:
