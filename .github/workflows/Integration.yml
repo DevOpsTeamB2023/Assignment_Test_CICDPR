@@ -48,6 +48,7 @@ jobs:
         token: ${{ github.token }}
         title: Issue - `${{ github.workflow }}` failed.
         body: |
+          cat testresults/report.xml
           [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           [Codebase](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
           Workflow name - `${{ github.workflow }}`
