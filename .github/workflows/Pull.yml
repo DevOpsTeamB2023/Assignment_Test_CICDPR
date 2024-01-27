@@ -76,16 +76,16 @@ jobs:
     if: ${{ github.event.review.state == 'changes_requested' }}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+  
       - name: Get Changed Files
-        run: |
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }})
-          echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
-
-      - name: Format List of Changed Files
-        run: |
-          NESTED_LIST=$(IFS=$'\n'; for f in $CHANGED_FILES; do echo -e "- `dirname $f`:\n  - $f"; done)
-          echo "NESTED_LIST=$NESTED_LIST" >> $GITHUB_ENV
-          
+        id: changed-files
+        uses: tj-actions/changed-files@v42
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        
       - uses: dacbd/create-issue-action@main
         with:
           token: ${{ github.token }}
@@ -93,7 +93,7 @@ jobs:
           body: |
             **Files Changed :**
 
-            ${{ env.NESTED_LIST }}_
+            ${{ steps.changed-files.outputs.all_changed_files }}_
             
             [View Code on GitHub](https://github.com/${{ github.repository }}/tree/${{ github.event.pull_request.head.ref }})
             
