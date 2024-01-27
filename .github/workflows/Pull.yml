@@ -102,13 +102,12 @@ jobs:
   Merge_Request:
     name: Merge Request
     needs: Response_Review
-    if: ${{ github.event.review.state != 'changes_requested' }} && ${{ needs.Response_Review.outputs.approved_reviews }} >= 1 && 
+    if: ${{ github.event.review.state != 'changes_requested' }} && ${{ steps.Response_Review.outputs.approved_reviews }} >= 1
     runs-on: ubuntu-latest
     steps:
       # Retrieve Pull Request status of checks
       - uses: actions/checkout@v4
       
-        if: ${{ github.event.review.state != 'changes_requested' }}
       - name: Get Check Status
         uses: danieldeichfuss/get-status@v0.0.10
         id: get-status
@@ -118,7 +117,7 @@ jobs:
 
       # Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
       - uses: actions/checkout@v3
-        if: ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }} && ${{ startsWith(github.event.comment.body, '/add-labels') }}
+        if: ${{ github.event.review.state != 'changes_requested' }} && ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }} && ${{ startsWith(github.event.comment.body, '/add-labels') }}
       - name: Label Pull Request as automerge
         uses: actions-ecosystem/action-add-labels@v1
         with:
@@ -131,7 +130,5 @@ jobs:
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          # required_labels: automerge
-          # merge_commit_message: "${{ github.event.pull_request.number }} - Merged PR#${{ github.event.pull_request.number }} "
-          # title: ${{ github.event.pull_request.number }} + " pull request merged"
+          merge_commit_message: "${{ github.event.pull_request.number }} - Merged PR#${{ github.event.pull_request.number }} "
           merge_method: merge
