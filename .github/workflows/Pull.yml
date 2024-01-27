@@ -92,5 +92,6 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           required_labels: automerge
+          merge_commit_message: "{ pull-request-title } - Merged PR#${{ github.event.pull_request.number }} "
           title: ${{ github.event.pull_request.number }} + " pull request merged"
           merge_method: merge
