@@ -91,7 +91,7 @@ jobs:
           body: |
             **Files Changed -**
 
-            [${{ steps.changed-markdown-files.outputs.all_changed_files }}]
+            [${{ steps.changed-markdown-files.outputs.all_changed_files }}](https://github.com/${{ github.repository }}/${{ steps.changed-markdown-files.outputs.all_changed_files }})
             
             [View Code on GitHub](https://github.com/${{ github.repository }}/tree/${{ github.event.pull_request.head.ref }})
             
