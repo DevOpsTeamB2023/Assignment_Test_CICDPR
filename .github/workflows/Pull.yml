@@ -51,7 +51,6 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
 
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
-          APPROVED_REVIEWS=
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
 
       # Retreive Review Comment
@@ -117,8 +116,8 @@ jobs:
 
       # Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
       - uses: actions/checkout@v3
-        if: ${{ github.event.review.state != 'changes_requested' }} && ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }} && ${{ startsWith(github.event.comment.body, '/add-labels') }}
       - name: Label Pull Request as automerge
+        if: ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }} && ${{ startsWith(github.event.comment.body, '/add-labels') }}
         uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: automerge
