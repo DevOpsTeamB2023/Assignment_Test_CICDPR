@@ -83,8 +83,8 @@ jobs:
           body: |
             [Code Source](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
             Comment - 
-            ${{ steps.get_review_comment.outputs.review_comment }}
-          assignees: ${{ github.actor }}
+            ${{ needs.get_review_comment.outputs.review_comment }}
+          assignees: ${{ github.event.pull.request.user.login }}
 
   Merge_Request:
     needs: Response_Review
