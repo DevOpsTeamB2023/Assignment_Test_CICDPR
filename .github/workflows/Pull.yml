@@ -38,7 +38,7 @@ jobs:
           re-request-when-changes-requested: true
 
   Response_Review:
-    name: Review and Merge
+    name: Review
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request_review'
     steps:
@@ -60,6 +60,10 @@ jobs:
         with:
           token: ${{ github.token }}
           title: "[REQUEST CHANGES] PR#${{ github.event.pull_request.number }}"
+          body: |
+            [Code Source](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
+            Comment - 
+            `${{ steps.get_review_message.outputs.review_message }}`
           assignees: ${{ github.actor }}
 
   Merge_Request:
