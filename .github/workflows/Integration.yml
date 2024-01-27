@@ -94,7 +94,7 @@ jobs:
 
       - name: Check Contents
         run: |
-          cat testresults
+          cat testResults
           
       - name: Check Test Results
         run: |
