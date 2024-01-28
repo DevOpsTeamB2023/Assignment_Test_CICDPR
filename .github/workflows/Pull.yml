@@ -27,7 +27,9 @@ jobs:
           else
             REVIEWERS="koayyiting"
           fi
-          echo "::set-output name=reviewers::$REVIEWERS"
+          # echo "::set-output name=reviewers::$REVIEWERS"
+          echo "REVIEWERS=$REVIEWERS" >> $GITHUB_ENV
+          echo " ${$REVIEWERS} " 
 
       # Add Reviewer to Pull Request
       - name: Add Reviewers
