@@ -97,7 +97,7 @@ jobs:
         id: get_fails_test
         run: |
           sudo apt-get install xmlstarlet -y
-          FAILED_TESTS=$(xmlstarlet sel -t -v "testsuites/testsuite[failure]" -n testsresult/report.xml)
+          FAILED_TESTS=$(xmlstarlet sel -t -v "testsuites/testsuite[failure]" -n testresults/report.xml)
 
           if [[ -n "$FAILED_TESTS" ]]; then
             echo "Failed tests found: $FAILED_TESTS"
