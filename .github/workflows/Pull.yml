@@ -69,6 +69,16 @@ jobs:
       #     fi
       #     echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
       #     echo "Approved reviews: $APPROVED_REVIEWS"
+
+      - name: Get Review Status
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          REVIEWS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
+
+          APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')  
+          echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
+          echo "Approved reviews: $APPROVED_REVIEWS"
       
   Response_Review:
     name: Review
