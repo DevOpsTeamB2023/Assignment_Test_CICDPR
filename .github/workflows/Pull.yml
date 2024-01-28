@@ -18,7 +18,6 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Reviewer
-        id: toadd_reviewers
         # Defines Reviewer = (default) Technical Lead | Developer review Technical Lead
         run: |
           AUTHOR=${{ github.event.pull_request.user.login }}
@@ -53,26 +52,34 @@ jobs:
             status -        `${{ job.status }}`
             assignees: `${{ github.actor }}`
           assignees: lacsadoshaniahsantiago, koayyiting
+          
+      # - uses: actions/checkout@v4
+      # - name: Get Reviews
+      #   run: |
+      #     PR_NUMBER=${{ github.event.pull_request.number }}
+      #     REVIEWS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+      #       "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
+
+      #     if [[ -n "$REVIEWS" ]]; then
+      #       APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')
+      #       APPROVED_REVIEWS=${APPROVED_REVIEWS:-0}  # Set to 0 if empty
+      #     else
+      #       echo "Error fetching reviews!"
+      #       exit 1  # Exit with error to prevent further actions
+      #     fi
+      #     echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
+      #     echo "Approved reviews: $APPROVED_REVIEWS"
 
       - name: Get Review Status
-        id: get_reviews
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           REVIEWS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
-          
-          if [[ -n "$REVIEWS" ]]; then
-            APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')
-            echo " $APPROVED_REVIEW "
-            APPROVED_REVIEWS=${APPROVED_REVIEWS:-0}  # Set to 0 if empty
-            
-            echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
-            echo "Approved reviews: $APPROVED_REVIEWS"
-          else
-            echo "Error fetching reviews!"
-            exit 1  # Exit with error to prevent further actions
-          fi
 
+          APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')  
+          echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
+          echo "Approved reviews: $APPROVED_REVIEWS"
+      
   Response_Review:
     name: Review
     runs-on: ubuntu-latest
@@ -80,20 +87,14 @@ jobs:
     steps:
       # Retrieve Reviews approved
       - name: Get Review Status
-        id: get_reviews
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           REVIEWS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
 
-          echo " ${REVIEWS}"
-          if [[ -n "${REVIEWS}" ]]; then
-            APPROVED_REVIEWS=0
-          else
-            APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')
-          fi
+          APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')  
           echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
-          echo "${APPROVED_REVIEWS}"
+          echo "Approved reviews: $APPROVED_REVIEWS"
 
       - name: Request for Changes
         if: github.event.review.state == 'changes_requested'
@@ -129,7 +130,7 @@ jobs:
   Merge_Request:
     name:  Review Approved, Merge
     needs: Response_Review
-    if: ${{ github.event.review.state == 'APPROVED' }} && 
+    if: ${{ github.event.review.state == 'APPROVED' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
