@@ -39,31 +39,21 @@ jobs:
           reviewers: ${{ env.REVIEWERS }}
           re-request-when-changes-requested: true
 
-      - name: Get Review Status
-        id: get_reviews
-        run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          REVIEWS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews")
-          if [[ -n "$REVIEWS" ]]; then
-            APPROVED_REVIEWS=0
-          else
-            APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')
-          fi
-          echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
-          echo "${APPROVED_REVIEWS}"
-
-      - uses: actions/checkout@v4
-      - name: Check Status of Review
-        run: |
-          REVIEW_N=${{ env.APPROVED_REVIEWS }}
-          if [[ REVIEW_N -ge 1 ]]; then
-            echo "Approved Reviews Count: ${REVIEW_N}"
-          else
-            echo "There is no approved reviews. Do not continue next steps" 
-            exit 1
-          fi
-        
+      # Create Issue for Failed Workflow
+      - if: ${{ failure() }}
+        name: Create Issue on Failed workflow
+        uses: dacbd/create-issue-action@main
+        with:
+          token: ${{ github.token }}
+          title: Issue - `${{ github.workflow }}` failed.
+          body: |
+            [Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            [Codebase](https://github.com/${{ github.repository }}/tree/${{ github.sha }})
+            Workflow name - `${{ github.workflow }}`
+            Job -           `${{ github.job }}`
+            status -        `${{ job.status }}`
+            assignees: `${{ github.actor }}`
+          assignees: lacsadoshaniahsantiago, koayyiting
 
   Response_Review:
     name: Review
@@ -123,15 +113,17 @@ jobs:
     if: ${{ github.event.review.state == 'APPROVED' }}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Check Status of Review
         run: |
-          REVIEW_N=${{ env.APPROVE_REVIEWS }}
+          REVIEW_N=${{ env.APPROVED_REVIEWS }}
           if [[ REVIEW_N -ge 1 ]]; then
             echo "Approved Reviews Count: ${REVIEW_N}"
           else
             echo "There is no approved reviews. Do not continue next steps" 
             exit 1
           fi
+        
       # Retrieve Pull Request status of checks
       - uses: actions/checkout@v4
       - name: Get Check Status
