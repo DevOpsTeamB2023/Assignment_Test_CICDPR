@@ -91,6 +91,12 @@ jobs:
         with:
           name: testResults
           path: testsresults
+
+      - name: Check Contents
+        run: |
+          echo "Contents of report.xml:"
+          cat testsresults/report.xml
+          echo "Failed tests count: $failed_tests"
           
       - name: Check for Failed Tests
         run: |
