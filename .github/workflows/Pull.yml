@@ -96,6 +96,11 @@ jobs:
     if: ${{ github.event.review.state == 'approved' }} && ${{ needs.Response_Review.outputs.approved_reviews }} >= 1 
     runs-on: ubuntu-latest
     steps:
+      - name: Check status
+        run: |
+          echo "review state : ${{ github.event.review.state }} "
+          echo "approved reviews: ${{ needs.Response_Review.outputs.approved_reviews }} "
+          
       # Retrieve Pull Request status of checks
       - uses: actions/checkout@v4
       
