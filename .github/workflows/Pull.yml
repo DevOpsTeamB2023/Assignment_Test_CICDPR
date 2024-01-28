@@ -53,20 +53,20 @@ jobs:
           APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | .user.login')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
 
-      - name: Check Reviews
+      - name: Check Review
         run: |
-          echo "Approved Reviews: $APPROVED_REVIEWS"
+          echo "Approved Reviews: ${{ steps.get_reviews.outputs.approved_reviews }}"
   
   # Create Issue for Review Request for Changes
   Issue_Request:
     name: Request for Changes
     needs: Response_Review
-    if: ${{ github.event.review.state == 'changes_requested' }}
+    if: github.event.review.state == 'changes_requested'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
   
       - name: Get Changed Files
         id: changed-markdown-files
@@ -92,15 +92,10 @@ jobs:
 
   Merge_Request:
     name: Approved
-    needs: [Response_Review, Issue_Request]
-    if: ${{ github.event.review.state == 'APPROVED' }} && ${{ needs.Response_Review.outputs.approved_reviews  >= 1 }} && ${{ needs.Response_Review.outputs.approved_reviews != '' }}
+    needs: Issue_Request
+    if: github.event.review.state == 'APPROVED' && ${{ steps.get_reviews.outputs.approved_reviews }} >= 1
     runs-on: ubuntu-latest
-    steps:
-      - name: Check status
-        run: |
-          echo "review state : ${{ github.event.review.state }} "
-          echo "approved reviews: ${{ needs.Response_Review.outputs.approved_reviews }} "
-          
+    steps:         
       # Retrieve Pull Request status of checks
       - uses: actions/checkout@v4
       - name: Get Check Status
@@ -113,7 +108,7 @@ jobs:
       # Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
       - uses: actions/checkout@v3
       - name: Label Pull Request as automerge
-        if: ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }} && ${{ startsWith(github.event.comment.body, '/add-labels') }}
+        if: ${{ github.event.review.state == 'APPROVED' }} && ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }} && ${{ startsWith(github.event.comment.body, '/add-labels') }}
         uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: automerge
