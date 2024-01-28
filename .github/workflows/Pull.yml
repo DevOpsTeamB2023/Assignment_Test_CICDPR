@@ -63,6 +63,7 @@ jobs:
           
           if [[ -n "$REVIEWS" ]]; then
             APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')
+            echo " $APPROVED_REVIEW "
             APPROVED_REVIEWS=${APPROVED_REVIEWS:-0}  # Set to 0 if empty
             
             echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
