@@ -82,7 +82,7 @@ jobs:
 
   # Create Issue for Failing Test Results
   Test_Results:
-    name: Test Results Fail
+    name: Test Cases Fail
     needs: Testing
     if: always()
     runs-on: ubuntu-latest
@@ -91,13 +91,13 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: testResults
-          path: testsresults
+          path: testresults
           
       - name: Check for Failed Tests
         id: get_fails_test
         run: |
           sudo apt-get install xmlstarlet -y
-          FAILED_TESTS=$(xmlstarlet sel -t -v "testsuite/testcase[failure]" -n testresults/report.xml)
+          FAILED_TESTS=$(xmlstarlet sel -t -v "testsuites/testsuite[failure]" -n testsresult/report.xml)
 
           if [[ -n "$FAILED_TESTS" ]]; then
             echo "Failed tests found: $FAILED_TESTS"
@@ -110,7 +110,7 @@ jobs:
       - name: Check Contents
         run: |
           echo "Contents of report.xml:"
-          cat testsresults/report.xml
+          cat testresults/report.xml
           echo "Failed tests count: ${{ steps.get_fails_test.outputs.fail }}"
 
       # Create Issue for Fail Tests
@@ -131,7 +131,7 @@ jobs:
           
   # Showcase Test Results
   Test_Display:
-    name: Save Test Results
+    name: Publish Test Results
     needs: Testing
     runs-on: ubuntu-latest
     steps:
@@ -140,7 +140,7 @@ jobs:
       with:
         name: testResults
 
-    - name: Publish Test Results
+    - name: Display Test Results
       uses: EnricoMi/publish-unit-test-result-action/composite@v2
       if: always()
       with:
