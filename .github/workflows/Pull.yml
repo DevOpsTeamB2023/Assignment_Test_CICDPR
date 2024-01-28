@@ -39,6 +39,16 @@ jobs:
           reviewers: ${{ env.REVIEWERS }}
           re-request-when-changes-requested: true
 
+      - name: Check Status of Review
+        run: |
+          REVIEW_N=${{ env.APPROVE_REVIEWS }}
+          if [[ REVIEW_N -ge 1 ]]; then
+            echo "Approved Reviews Count: ${REVIEW_N}"
+          else
+            echo "There is no approved reviews. Do not continue next steps" 
+            exit 1
+          fi
+
   Response_Review:
     name: Review
     runs-on: ubuntu-latest
@@ -99,7 +109,7 @@ jobs:
     steps:
       - name: Check Status of Review
         run: |
-          REVIEW_N=${{ needs.Response_Review.outputs.approved_reviews }}
+          REVIEW_N=${{ env.APPROVE_REVIEWS }}
           if [[ REVIEW_N -ge 1 ]]; then
             echo "Approved Reviews Count: ${REVIEW_N}"
           else
