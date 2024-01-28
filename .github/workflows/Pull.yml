@@ -53,7 +53,7 @@ jobs:
           echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
           echo "${APPROVED_REVIEWS}"
 
-      - name: actions/checkout@v4
+      - uses: actions/checkout@v4
       - name: Check Status of Review
         run: |
           REVIEW_N=${{ env.APPROVED_REVIEWS }}
