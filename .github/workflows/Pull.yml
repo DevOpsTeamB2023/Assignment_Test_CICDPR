@@ -69,8 +69,6 @@ jobs:
           fi
           echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
           echo "Approved reviews: $APPROVED_REVIEWS"
-          
-      - uses: actions/checkout@v4
       
   Response_Review:
     name: Review
