@@ -81,9 +81,10 @@ jobs:
         path: testresults
 
   # Create Issue for Failing Test Results
-  Test_Fail:
+  Test_Results:
     name: Test Results Fail
     needs: Testing
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Download Remote Test Results
@@ -91,26 +92,28 @@ jobs:
         with:
           name: testResults
           path: testsresults
+          
+      - name: Check for Failed Tests
+        id: get_fails_test
+        run: |
+          sudo apt-get install xmlstarlet -y
+          FAILED_TESTS=$(xmlstarlet sel -t -v "testsuite/testcase[failure]" -n testresults/report.xml)
 
+          if [[ -n "$FAILED_TESTS" ]]; then
+            echo "Failed tests found: $FAILED_TESTS"
+            echo "set::output name=fail::$FAILED_TESTS"
+            exit 1  # Signal failure
+          else
+            echo "All tests passed."
+          fi
+          
       - name: Check Contents
         run: |
           echo "Contents of report.xml:"
           cat testsresults/report.xml
-          echo "Failed tests count: $failed_tests"
-          
-      - name: Check for Failed Tests
-        run: |
-          sudo apt-get install jq -y
-          #Use a suitable tool to parse the test results (e.g., jq for XML, Python script for custom formats)
-          FAILED_TESTS=$(jq '.testsuite.testcase[] | select(.failure != null) | .name' testresults/report.xml)
+          echo "Failed tests count: ${{ steps.get_fails_test.outputs.fail }}"
 
-          if [[ -n "$FAILED_TESTS" ]]; then
-            echo "Failed tests found: $FAILED_TESTS"
-          # Signal failure or perform other actions
-          else
-            echo "All tests passed."
-          fi
-
+      # Create Issue for Fail Tests
       - name: Create Issue on Test Failure
         if: ${{ failure() }}  # Only runs if the "Check Test Results" step failed
         uses: dacbd/create-issue-action@main
@@ -127,7 +130,7 @@ jobs:
           assignees: ${{ github.actor }}
           
   # Showcase Test Results
-  Test_Results:
+  Test_Display:
     name: Save Test Results
     needs: Testing
     runs-on: ubuntu-latest
