@@ -54,9 +54,6 @@ jobs:
           echo "${APPROVED_REVIEWS}"
 
       - name: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          
       - name: Check Status of Review
         run: |
           REVIEW_N=${{ env.APPROVED_REVIEWS }}
@@ -66,6 +63,7 @@ jobs:
             echo "There is no approved reviews. Do not continue next steps" 
             exit 1
           fi
+        
 
   Response_Review:
     name: Review
