@@ -93,7 +93,7 @@ jobs:
   Merge_Request:
     name: Approved
     needs: Response_Review
-    if: ${{ github.event.review.state == 'approved' }} && ${{ needs.Response_Review.outputs.approved_reviews }} >= 1 
+    if: ${{ github.event_name == 'pull_request_review' }} && ${{ github.event.review.state == 'APPROVED' }} && ${{ needs.Response_Review.outputs.approved_reviews  >= 1 }} && && ${{ needs.Response_Review.outputs.approved_reviews != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check status
@@ -103,7 +103,6 @@ jobs:
           
       # Retrieve Pull Request status of checks
       - uses: actions/checkout@v4
-      
       - name: Get Check Status
         uses: danieldeichfuss/get-status@v0.0.10
         id: get-status
