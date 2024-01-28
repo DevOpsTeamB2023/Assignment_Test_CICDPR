@@ -127,7 +127,7 @@ jobs:
   Merge_Request:
     name:  Review Approved, Merge
     needs: Response_Review
-    if: ${{ github.event.review.state == 'APPROVED' }} && 
+    if: ${{ github.event.review.state == 'APPROVED' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
