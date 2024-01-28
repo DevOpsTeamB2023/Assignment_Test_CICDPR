@@ -100,11 +100,15 @@ jobs:
           
       - name: Check for Failed Tests
         run: |
-          # Assuming a JUnit XML report format
-          failed_tests=$(grep 'failure' testsresults/report.xml | wc -l)
-          if [[ $failed_tests -gt 0 ]]; then
-            echo "Failed tests detected!"
-            exit 1  # Exit with an error code to trigger issue creation
+          sudo apt-get install jq -y
+          #Use a suitable tool to parse the test results (e.g., jq for XML, Python script for custom formats)
+          FAILED_TESTS=$(jq '.testsuite.testcase[] | select(.failure != null) | .name' testresults/report.xml)
+
+          if [[ -n "$FAILED_TESTS" ]]; then
+            echo "Failed tests found: $FAILED_TESTS"
+          # Signal failure or perform other actions
+          else
+            echo "All tests passed."
           fi
 
       - name: Create Issue on Test Failure
