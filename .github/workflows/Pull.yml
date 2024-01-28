@@ -39,23 +39,6 @@ jobs:
           reviewers: ${{ steps.toadd_reviewers.outputs.reviewers }}
           re-request-when-changes-requested: true
 
-      # Retrieve Reviews approved
-      - name: Get Review Status
-        id: get_reviews
-        run: |
-          # sudo apt-get install jq -y
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          REVIEWS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews")
-
-          if [[ -n "$REVIEWS" ]]; then
-            APPROVED_REVIEWS=0
-          else
-            APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')
-          fi
-          echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
-          echo "${APPROVED_REVIEWS}"
-
   Response_Review:
     name: Review
     runs-on: ubuntu-latest
@@ -69,16 +52,13 @@ jobs:
           REVIEWS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews")
 
-          if [[ "$(echo "$REVIEWS" | jq '. | length')" -eq 0 ]]; then
+          if [[ -n "$REVIEWS" ]]; then
             APPROVED_REVIEWS=0
           else
             APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')
           fi
-          echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
-
-      - name: Check Review
-        run: |
-          echo "Approved Reviews: ${{ steps.get_reviews.outputs.approved_reviews }}"
+          echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
+          echo "${APPROVED_REVIEWS}"
 
       - name: Request for Changes
         if: github.event.review.state == 'changes_requested'
