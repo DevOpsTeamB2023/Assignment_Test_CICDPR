@@ -77,19 +77,12 @@ jobs:
     steps:
       # Retrieve Reviews approved
       - name: Get Review Status
-        id: get_reviews
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           REVIEWS=$(curl -sSL -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/pulls/${PR_NUMBER}/reviews")
 
-          if [[ -n "$REVIEWS" ]]; then
-            APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')
-            APPROVED_REVIEWS=${APPROVED_REVIEWS:-0}  # Set to 0 if empty
-          else
-            echo "Error fetching reviews!"
-            exit 1  # Exit with error to prevent further actions
-          fi
+          APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')  
           echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
           echo "Approved reviews: $APPROVED_REVIEWS"
 
