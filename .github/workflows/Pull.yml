@@ -48,10 +48,12 @@ jobs:
           
           APPROVED_REVIEWS=$(echo "$REVIEWS" | ConvertTo-JSON | jq -r '.[] | select(.state == "APPROVED") | length // 0')
           echo "::set-output name=approved_reviews::$APPROVED_REVIEWS"
+          echo "::set-output name=review:::$REVIEWS"
           
       - name: Check Review
         run: |
           echo "Approved Reviews: ${{ steps.get_reviews.outputs.approved_reviews }}"
+          echo "Review: ${{ steps.get_reviews.outputs.review }}"
 
   Response_Review:
     name: Review
