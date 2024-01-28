@@ -93,7 +93,7 @@ jobs:
   Merge_Request:
     name: Approved
     needs: Response_Review
-    if: ${{ github.event_name == 'pull_request_review' }} && ${{ github.event.review.state == 'APPROVED' }} && ${{ needs.Response_Review.outputs.approved_reviews  >= 1 }} && && ${{ needs.Response_Review.outputs.approved_reviews != '' }}
+    if: ${{ github.event_name == 'pull_request_review' }} && ${{ github.event.review.state == 'APPROVED' }} && ${{ needs.Response_Review.outputs.approved_reviews  >= 1 }} && ${{ needs.Response_Review.outputs.approved_reviews != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check status
