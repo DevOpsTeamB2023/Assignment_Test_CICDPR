@@ -94,12 +94,22 @@ jobs:
   Merge_Request:
     name:  Review Approved, Merge
     needs: Response_Review
-    if: ${{ github.event.review.state == 'APPROVED' }} && ${{ needs.get_reviews.outputs.approved_reviews }} >= 1
+    if: ${{ github.event.review.state == 'APPROVED' }}
     runs-on: ubuntu-latest
-    steps:         
+    steps:
+      - name: Check Status of Review
+        run: |
+          REVIEW_N=${{ needs.Response_Review.outputs.approved_reviews }}
+          if [[ REVIEW_N -ge 1 ]]; then
+            echo "Approved Reviews Count: ${REVIEW_N}"
+          else
+            echo "There is no approved reviews. Do not continue next steps" 
+            exit 1
+          fi
       # Retrieve Pull Request status of checks
       - uses: actions/checkout@v4
       - name: Get Check Status
+        if: ${{ success() }}
         uses: danieldeichfuss/get-status@v0.0.10
         id: get-status
         with:
@@ -109,7 +119,7 @@ jobs:
       # Add automerge label to be able to run pascalgn/automerge-action@v0.16.2 successfully 
       - uses: actions/checkout@v3
       - name: Label Pull Request as automerge
-        if: ${{ github.event.review.state == 'APPROVED' }} && ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }} && ${{ startsWith(github.event.comment.body, '/add-labels') }}
+        if: ${{ success() }} && ${{ steps.get-status.outputs.all-checks-completed == 'true' && steps.get-status.outputs.all-checks-passed == 'true' }} && ${{ startsWith(github.event.comment.body, '/add-labels') }}
         uses: actions-ecosystem/action-add-labels@v1
         with:
           labels: automerge
