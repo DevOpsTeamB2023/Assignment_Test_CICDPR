@@ -27,7 +27,6 @@ jobs:
           else
             REVIEWERS="koayyiting"
           fi
-          # echo "::set-output name=reviewers::$REVIEWERS"
           echo "REVIEWERS=$REVIEWERS" >> $GITHUB_ENV
           echo " ${REVIEWERS} " 
 
