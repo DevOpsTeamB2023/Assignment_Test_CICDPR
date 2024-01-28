@@ -63,13 +63,12 @@ jobs:
           if [[ -n "$REVIEWS" ]]; then
             APPROVED_REVIEWS=$(echo "$REVIEWS" | jq -r '.[] | select(.state == "APPROVED") | length')
             APPROVED_REVIEWS=${APPROVED_REVIEWS:-0}  # Set to 0 if empty
-            
-            echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
-            echo "Approved reviews: $APPROVED_REVIEWS"
           else
             echo "Error fetching reviews!"
             exit 1  # Exit with error to prevent further actions
           fi
+          echo "APPROVED_REVIEWS=$APPROVED_REVIEWS" >> $GITHUB_ENV
+          echo "Approved reviews: $APPROVED_REVIEWS"
           
       - uses: actions/checkout@v4
       
